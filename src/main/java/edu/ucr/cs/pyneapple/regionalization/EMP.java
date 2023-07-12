@@ -2,6 +2,7 @@ package edu.ucr.cs.pyneapple.regionalization;
 
 import edu.ucr.cs.pyneapple.utils.EMPUtils.RegionCollection;
 import edu.ucr.cs.pyneapple.utils.EMPUtils.Region;
+import edu.ucr.cs.pyneapple.utils.EMPUtils.RegionWithVariance;
 import edu.ucr.cs.pyneapple.utils.EMPUtils.EMPTabu;
 import edu.ucr.cs.pyneapple.utils.EMPUtils.TabuReturn;
 import edu.ucr.cs.pyneapple.utils.SpatialGrid;
@@ -51,8 +52,7 @@ public class EMP implements RegionalizationMethod {
     }
 
     /**
-     * The constructor of EMP that sets the number of iterations and the limit of merge attempts.
-     * @param its The number of iterations. The best result of all iterations is saved.
+     * nations. The best result of all iterations is saved.
      * @param merges The limit of merge attempts when combining regions for the non-monitonic constraints. A small value tries to avoid growing oversized regions but more areas may remain unassigned.
      */
     public EMP(int its, int merges){
@@ -1355,6 +1355,7 @@ public class EMP implements RegionalizationMethod {
 
 
     }
+
     void  set_input_construct(String fileName,
                                   String minAttrName,
                                   Double minAttrLow,
@@ -2115,6 +2116,7 @@ public class EMP implements RegionalizationMethod {
             System.out.println("End of setipnput");
 
     }
+
 
 
 }

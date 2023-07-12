@@ -2,6 +2,7 @@ package edu.ucr.cs.pyneapple.utils.EMPUtils;
 
 import edu.ucr.cs.pyneapple.utils.SpatialGrid;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Set;
 /**
  * The class for representing a region for the EMP problem
  */
-public class Region {
+public class Region  implements Serializable {
     static boolean debug = false;
     static double minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound;
     List<Integer> areaList;
@@ -19,6 +20,19 @@ public class Region {
     double average, max, min, sum;
     double acceptLow, acceptHigh;
     Set<Integer> areaNeighborSet;
+
+    public Region() {
+        numOfAreas = 0;
+        average = 0;
+        this.id = -1;
+        this.acceptLow = Region.avgLowerBound;
+        this.acceptHigh = Region.avgUpperBound;
+        this.areaNeighborSet = new HashSet<Integer>();
+        this.areaList = new ArrayList<Integer>();
+        this.max = -Double.POSITIVE_INFINITY;
+        this.min = Double.POSITIVE_INFINITY;
+        this.sum = 0;
+    }
 
     /**
      * Set the constraint thresholds for the regions

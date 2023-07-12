@@ -2,18 +2,19 @@ package edu.ucr.cs.pyneapple.utils.EMPUtils;
 
 import edu.ucr.cs.pyneapple.utils.SpatialGrid;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class RegionWithVariance {
+public class RegionWithVariance implements Serializable {
     static boolean debug = false;
-    static double minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound, varianceLowerBound, varianceUpperBound;
+    static double minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound, varLowerBound, varUpperBound;
     List<Integer> areaList;
     int id;
     int numOfAreas;
-    double average, max, min, sum, variance;
+    double average, max, min, sum, variance, varianceAverage, varianceSum, varianceSumSquare;
     double avgAcceptLow, avgAcceptHigh;
     Set<Integer> areaNeighborSet;
     public static void setRange(Double minLowerBound,
@@ -22,12 +23,12 @@ public class RegionWithVariance {
                                 Double maxUpperBound,
                                 Double avgLowerBound,
                                 Double avgUpperBound,
+                                Double varianceLowerBound,
+                                Double varianceUpperBound,
                                 Double sumLowerBound,
                                 Double sumUpperBound,
                                 Double countLowerBound,
-                                Double countUpperBound,
-                                Double varianceLowerBound,
-                                Double varianceUpperBound){
+                                Double countUpperBound){
         RegionWithVariance.minLowerBound = minLowerBound;
         RegionWithVariance.minUpperBound = minUpperBound;
         RegionWithVariance.maxLowerBound = maxLowerBound;
@@ -38,13 +39,18 @@ public class RegionWithVariance {
         RegionWithVariance.sumUpperBound = sumUpperBound;
         RegionWithVariance.countLowerBound = countLowerBound;
         RegionWithVariance.countUpperBound = countUpperBound;
-        RegionWithVariance.varianceLowerBound = varianceLowerBound;
-        RegionWithVariance.varianceUpperBound = varianceUpperBound;
+        RegionWithVariance.varLowerBound = varianceLowerBound;
+        RegionWithVariance.varUpperBound = varianceUpperBound;
     }
     //Set<Integer>
     public RegionWithVariance(int id){
+        super();
         numOfAreas = 0;
         average = 0;
+        variance = 0;
+        varianceAverage = 0;
+        varianceSum = 0;
+        varianceSumSquare = 0;
         this.id = id;
         this.avgAcceptLow = RegionWithVariance.avgLowerBound;
         this.avgAcceptHigh = RegionWithVariance.avgUpperBound;
@@ -54,7 +60,7 @@ public class RegionWithVariance {
         this.min = Double.POSITIVE_INFINITY;
         this.sum = 0;
     }
-    public boolean addArea(Integer id, long minAttrVal, long maxAttrVal, long avgAttrVal, long sumAttrVal, SpatialGrid sg){
+    public boolean addArea(Integer id, long minAttrVal, long maxAttrVal, long avgAttrVal, long varAttrVal, long sumAttrVal, SpatialGrid sg){
         if (areaList.contains(id)){
             if(debug){
                 System.out.println("Area " + id + " is already contained in the current region " + this.id + "!");
@@ -74,6 +80,11 @@ public class RegionWithVariance {
             this.numOfAreas = this.numOfAreas + 1;
             avgAcceptLow = RegionWithVariance.avgLowerBound * (numOfAreas + 1) - average * numOfAreas;
             avgAcceptHigh = RegionWithVariance.avgUpperBound * (numOfAreas +1) - average * numOfAreas;
+            //varianceAverage = (varianceAverage * numOfAreas + varAttrVal) / (numOfAreas + 1);
+            varianceSum += varAttrVal;
+            varianceSumSquare += Math.pow(varAttrVal, 2);
+            //this.variance = 1 / (this.getCount() + 1.0) *  (this.variance * this.getCount() + this.getCount() / (this.getCount() + 1.0 ) * Math.pow((this.varianceAverage - varAttrVal), 2));
+            this.variance = varianceSumSquare / this.getCount() - Math.pow(varianceSum, 2) / Math.pow(this.getCount(), 2);
             if(this.min > minAttrVal){
                 this.min = minAttrVal;
             }
@@ -90,7 +101,19 @@ public class RegionWithVariance {
         }
 
     }
-    public boolean removeArea(Integer id, ArrayList<Long> minAttr, ArrayList<Long> maxAttr, ArrayList<Long> avgAttr,  ArrayList<Long> sumAttr, SpatialGrid sg){
+    public double getVariance(){
+        return this.variance;
+    }
+    public double getVarianceAverage(){
+        return this.varianceAverage;
+    }
+    public double getVarianceSum(){
+        return this.varianceSum;
+    }
+    public double getVarianceSumSquare(){
+        return this.varianceSumSquare;
+    }
+    public boolean removeArea(Integer id, ArrayList<Long> minAttr, ArrayList<Long> maxAttr, ArrayList<Long> avgAttr,  ArrayList<Long> varAttr, ArrayList<Long> sumAttr, SpatialGrid sg){
         if (!areaList.contains(id)){
             System.out.println("Area to be removed is not in the region: area Id " + id + " region Id " + this.getId());
             return false;
@@ -103,6 +126,12 @@ public class RegionWithVariance {
             //System.out.println("Area sum attr: " + sumAttr.get(id));
            // System.out.println("Sum after removal： " + this.sum);
             this.average = (this.average * numOfAreas - avgAttr.get(id)) / (numOfAreas - 1);
+            //this.varianceAverage = (this.average * numOfAreas - avgAttr.get(id)) / (numOfAreas - 1);
+            this.varianceSum -= varAttr.get(id);
+            this.varianceSumSquare -= varAttr.get(id) * varAttr.get(id);
+            this.variance = varianceSumSquare / this.getCount() - Math.pow(varianceSum, 2) / Math.pow(this.getCount(), 2);
+
+
             numOfAreas --;
             double oldMin = this.min;
             this.max = -Double.POSITIVE_INFINITY;
@@ -173,7 +202,7 @@ public class RegionWithVariance {
     public int getCount(){
         return this.numOfAreas;
     }
-    public boolean acceptable(Integer area, ArrayList<Long> minAttr, ArrayList <Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> sumAttr){
+    public boolean acceptable(Integer area, ArrayList<Long> minAttr, ArrayList <Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> varAttr, ArrayList<Long> sumAttr){
         if(this.numOfAreas + 1 <= countUpperBound){
             if(this.sum + sumAttr.get(area) <= sumUpperBound){
                 if((minAttr.get(area) < this.min && minAttr.get(area) <= minUpperBound && minAttr.get(area) >= minLowerBound) ||
@@ -182,7 +211,16 @@ public class RegionWithVariance {
                             maxAttr.get(area) <= this.max){
                         double tmpAvg = (this.numOfAreas * this.average + avgAttr.get(area)) / (this.numOfAreas + 1);
                         if(tmpAvg >= avgLowerBound && tmpAvg <= avgUpperBound){
-                            return true;
+                            double tmpVarSum = varianceSum + varAttr.get(area);
+                            double tmpVarSumSquare = varianceSumSquare + varAttr.get(area) * varAttr.get(area);
+                            double tmpVar = tmpVarSumSquare / (this.getCount() + 1.0) - Math.pow(tmpVarSum, 2) / Math.pow(this.getCount() + 1, 2);
+                            if(tmpVar >= varLowerBound && tmpVar <= varUpperBound)
+                                return true;
+                            else{
+                                if(debug){
+                                    System.out.println("Adding area " +area + " to region " + this.id + " exceeds one of the var");
+                                }
+                            }
                         }else{
                             if(debug){
                                 System.out.println("Adding area " +area + " to region " + this.id + " exceeds one of the avg");
@@ -211,15 +249,21 @@ public class RegionWithVariance {
         return false;
     }
 
-    public boolean removable(Integer area, ArrayList<Long> minAttr, ArrayList <Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> sumAttr, SpatialGrid sg){
+    public boolean removable(Integer area, ArrayList<Long> minAttr, ArrayList <Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> varAttr, ArrayList<Long> sumAttr, SpatialGrid sg){
         if(!areaList.contains(area)){
-            System.out.println("Area " + area + " not removable because area not in the list of " + this.getId());
+            System.out.println("Area " + area + " not removable because area not in the list of " + this.getId() + " " + areaList);
             return false;
         }
         if((this.numOfAreas - 1) >= RegionWithVariance.countLowerBound &&
                 ((this.sum - sumAttr.get(area)) >= RegionWithVariance.sumLowerBound) &&
                 ((this.average * numOfAreas - avgAttr.get(area)) / (numOfAreas - 1) >= RegionWithVariance.avgLowerBound) &&
                 ((this.average * numOfAreas - avgAttr.get(area)) / (numOfAreas - 1) <= RegionWithVariance.avgUpperBound)){
+            double tmpVarSum = varianceSum - varAttr.get(area);
+            double tmpVarSumSquare = varianceSumSquare - varAttr.get(area) * varAttr.get(area);
+            double tmpVar = tmpVarSumSquare / (this.getCount() - 1.0) - Math.pow(tmpVarSum, 2) / Math.pow(this.getCount() - 1, 2);
+            if(!(tmpVar >= varLowerBound && tmpVar <= varUpperBound))
+                return false;
+
             if(this.min == minAttr.get(area) || this.max == maxAttr.get(area)){
                 Double tmpMin = Double.POSITIVE_INFINITY;
                 Double tmpMax = -Double.POSITIVE_INFINITY;
@@ -355,7 +399,7 @@ public class RegionWithVariance {
 
         return connectedComponents;
     }
-    public RegionWithVariance mergeWith(RegionWithVariance expandR, ArrayList<Long> minAttr, ArrayList<Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> sumAttr, SpatialGrid sg) {
+    public RegionWithVariance mergeWith(RegionWithVariance expandR, ArrayList<Long> minAttr, ArrayList<Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> varAttr, ArrayList<Long> sumAttr, SpatialGrid sg) {
         if(expandR == null){
             System.out.println("Error, region to be merged is NULL! " + this.getId());
         }
@@ -364,22 +408,40 @@ public class RegionWithVariance {
         }
         RegionWithVariance tmpR = new RegionWithVariance(-1);
         for(Integer a: this.areaList){
-            tmpR.addArea(a, minAttr.get(a), maxAttr.get(a), avgAttr.get(a), sumAttr.get(a),  sg);
+            tmpR.addArea(a, minAttr.get(a), maxAttr.get(a), avgAttr.get(a), varAttr.get(a), sumAttr.get(a),  sg);
         }
         for(Integer a: expandR.getAreaList()){
-            tmpR.addArea(a, minAttr.get(a), maxAttr.get(a), avgAttr.get(a), sumAttr.get(a),  sg);
+            tmpR.addArea(a, minAttr.get(a), maxAttr.get(a), avgAttr.get(a), varAttr.get(a), sumAttr.get(a),  sg);
         }
         //System.out.println("Merged region:" + tmpR.getCount());
         return tmpR;
 
     }
+    public static double simpleVariance(int count, double varSum, double varSumSquare){
+        double variance =  varSumSquare / count - Math.pow(varSum/count, 2);
+        return variance;
+    }
     public boolean satisfiable(){
+        /*System.out.println("Min u "+ minUpperBound);
+        System.out.println("Min l "+minLowerBound);
+        System.out.println("Max u "+maxUpperBound);
+        System.out.println("Max l "+maxLowerBound);
+        System.out.println("avg u "+avgUpperBound);
+        System.out.println("avg l "+avgLowerBound);
+        System.out.println("var u "+varUpperBound);
+        System.out.println("var l "+varLowerBound);
+        System.out.println("sum u "+sumUpperBound);
+        System.out.println("sum l "+sumLowerBound);
+        System.out.println("count u" + countUpperBound);
+        System.out.println("count l " +countLowerBound);*/
         return(this.min <= minUpperBound &&
                 this.min >= minLowerBound &&
                 this.max <= maxUpperBound &&
                 this.max >= maxLowerBound &&
                 this.average >= avgLowerBound &&
                 this.average <= avgUpperBound &&
+                this.variance >= varLowerBound &&
+                this.variance <= varUpperBound &&
                 this.sum >= sumLowerBound &&
                 this.sum <= sumUpperBound &&
                 this.numOfAreas >= countLowerBound &&
