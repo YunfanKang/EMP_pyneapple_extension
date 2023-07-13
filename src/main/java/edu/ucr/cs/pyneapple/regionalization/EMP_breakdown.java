@@ -2820,10 +2820,14 @@ public class EMP_breakdown implements RegionalizationMethod {
         int min_unAssigned = maxAttr.size();
         //First step: Filtering and seeding for MIN, MAX.
         Pair<int[], ArrayList<Integer>> minmaxResult = null;
+        int[] minmaxlabels = null;
+        ArrayList<Integer> minmaxseedAreas =null;
         if(repeatQuery && (differentConstraint && stateOfChange == 1)){
             try{
                 ois = new ObjectInputStream(new FileInputStream(recordName + "/minmax.txt"));
                 minmaxResult = (Pair<int[], ArrayList<Integer>>) ois.readObject();
+                minmaxlabels = minmaxResult.getValue0();
+                minmaxseedAreas = minmaxResult.getValue1();
                 //minmaxseedAreas = (ArrayList<Integer>)ois.readObject();
             }catch(Exception e){
                 e.printStackTrace();
@@ -2838,10 +2842,11 @@ public class EMP_breakdown implements RegionalizationMethod {
             }catch(Exception e){
                 e.printStackTrace();
             }
+            minmaxlabels = minmaxResult.getValue0();
+            minmaxseedAreas = minmaxResult.getValue1();
 
         }
-        int[] minmaxlabels = minmaxResult.getValue0();
-        ArrayList<Integer> minmaxseedAreas = minmaxResult.getValue1();
+
 
 
         double minEnd = System.currentTimeMillis() / 1000.0;
@@ -2878,9 +2883,14 @@ public class EMP_breakdown implements RegionalizationMethod {
         //ObjectOutputStream sumOos = null;
         for (int it = 0; it < maxIt; it++) {
 
-            int[] labels = minmaxlabels.clone();
+            int[] labels = null;
+            ArrayList<Integer> seedAreas = null;
+            if(differentConstraint && stateOfChange <= 1){
+                labels = minmaxlabels.clone();
+                seedAreas = new ArrayList<>(minmaxseedAreas);
+            }
             Map<Integer, RegionWithVariance> regionList = null;
-            ArrayList<Integer> seedAreas = new ArrayList<>(minmaxseedAreas);
+
             if(var_debug)
                 System.out.println("Before initialiazation");
 
@@ -2894,6 +2904,8 @@ public class EMP_breakdown implements RegionalizationMethod {
                     }catch(Exception e){
                         e.printStackTrace();
                     }
+                    labels = varInitialization.getValue0();
+                    regionList = varInitialization.getValue1();
                 }else{
                     varInitialization = region_initialization_var(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, varAttr, varLowerBound, varUpperBound, sumAttr);
                     try{
@@ -2902,14 +2914,15 @@ public class EMP_breakdown implements RegionalizationMethod {
                     }catch(Exception e){
                         e.printStackTrace();
                     }
+                    labels = varInitialization.getValue0();
+                    regionList = varInitialization.getValue1();
                 }
                 //Second step: AVG and MIN MAX revisit
                 //Quartet<int[], Map<Integer, Region>, List<Integer>, List<Integer>> avgInitialization = region_initialization(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, avgLowerBound, avgUpperBound, sumAttr);
                 //Triplet<int[], Map<Integer, RegionWithVariance>, List<Integer>> varInitialization = region_initialization_var(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, varAttr, varLowerBound, varUpperBound, sumAttr);
                 if(var_debug)
                     System.out.println("After initialization");
-                labels = varInitialization.getValue0();
-                regionList = varInitialization.getValue1();
+
             }else{
                 Quartet<int[], Map<Integer, RegionWithVariance>, List<Integer>, List<Integer>> avgInitialization = null;
                 if(repeatQuery &&(differentConstraint && stateOfChange == 2)){
@@ -2919,23 +2932,32 @@ public class EMP_breakdown implements RegionalizationMethod {
                     }catch(Exception e){
                         e.printStackTrace();
                     }
+                    labels = avgInitialization.getValue0();
+                    regionList = avgInitialization.getValue1();
                 }else if(repeatQuery &&(differentConstraint && stateOfChange > 2)){}
                 else{
                     avgInitialization = region_initialization(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, avgLowerBound, avgUpperBound, varAttr, varLowerBound, varUpperBound, sumAttr);
                     try{
-                        oos = new ObjectOutputStream(new FileOutputStream(recordName + "/avg.txt", true));
-                        oos.writeObject(avgInitialization);
+                        File f = new File(recordName + "/avg.txt");
+                        if(!f.exists() || f.length() == 0){
+                            oos = new ObjectOutputStream(new FileOutputStream(recordName + "/avg.txt"));
+                            oos.writeObject(avgInitialization);
+                        }else{
+                            oos = new EMPObjectOutputStream(new FileOutputStream(recordName + "/avg.txt", true));
+                            oos.writeObject(avgInitialization);
+                        }
                     }catch(Exception e){
                         e.printStackTrace();
                     }
+                    labels = avgInitialization.getValue0();
+                    regionList = avgInitialization.getValue1();
                 }
                 //Second step: AVG and MIN MAX revisit
                 //Quartet<int[], Map<Integer, Region>, List<Integer>, List<Integer>> avgInitialization = region_initialization(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, avgLowerBound, avgUpperBound, sumAttr);
                 //Triplet<int[], Map<Integer, RegionWithVariance>, List<Integer>> varInitialization = region_initialization_var(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, varAttr, varLowerBound, varUpperBound, sumAttr);
                 if(var_debug)
                     System.out.println("After initialization");
-                labels = avgInitialization.getValue0();
-                regionList = avgInitialization.getValue1();
+
             }
 
             if(debug){
