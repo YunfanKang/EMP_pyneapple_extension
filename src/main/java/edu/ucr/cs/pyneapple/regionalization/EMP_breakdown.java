@@ -115,17 +115,17 @@ public class EMP_breakdown implements RegionalizationMethod {
 
     }
     public static Pair filtering_and_seeding(ArrayList<Integer> areas,
-                                                       ArrayList<Long> minAttr,
-                                                       Double minLowerBound,
-                                                       Double minUpperBound,
+                                             ArrayList<Long> minAttr,
+                                             Double minLowerBound,
+                                             Double minUpperBound,
 
-                                                       ArrayList<Long> maxAttr,
-                                                       Double maxLowerBound,
-                                                       Double maxUpperBound,
+                                             ArrayList<Long> maxAttr,
+                                             Double maxLowerBound,
+                                             Double maxUpperBound,
 
 
-                                                       ArrayList<Long> sumAttr,
-                                                       Double sumUpperBound){
+                                             ArrayList<Long> sumAttr,
+                                             Double sumUpperBound){
         int[] labels = new int[maxAttr.size()];//The size of the attribute sets should be the same.
         if (minLowerBound != -Double.POSITIVE_INFINITY || maxUpperBound != Double.POSITIVE_INFINITY || sumUpperBound != Double.POSITIVE_INFINITY) {
             Iterator<Integer> idIterator = areas.iterator();
@@ -159,17 +159,17 @@ public class EMP_breakdown implements RegionalizationMethod {
         return minmaxResult;
     }
     public static Quartet<int[], Map<Integer, RegionWithVariance>, List<Integer>, List<Integer>> variance_initialization(int[] labels,
-                                                                                                                ArrayList<Integer> seedAreas,
-                                                                                                                SpatialGrid r,
-                                                                                                                ArrayList<Long> minAttr,
-                                                                                                                Double minUpperBound,
-                                                                                                                ArrayList<Long> maxAttr,
-                                                                                                                Double maxLowerBound,
-                                                                                                                ArrayList<Long> varAttr,
-                                                                                                                Double varLowerBound,
-                                                                                                                Double varUpperBound,
-                                                                                                                ArrayList<Long> avgAttr,
-                                                                                                                ArrayList<Long> sumAttr){
+                                                                                                                         ArrayList<Integer> seedAreas,
+                                                                                                                         SpatialGrid r,
+                                                                                                                         ArrayList<Long> minAttr,
+                                                                                                                         Double minUpperBound,
+                                                                                                                         ArrayList<Long> maxAttr,
+                                                                                                                         Double maxLowerBound,
+                                                                                                                         ArrayList<Long> varAttr,
+                                                                                                                         Double varLowerBound,
+                                                                                                                         Double varUpperBound,
+                                                                                                                         ArrayList<Long> avgAttr,
+                                                                                                                         ArrayList<Long> sumAttr){
         int cId; //Counter for numbering the regions
 
         Map<Integer, RegionWithVariance> regionList = new HashMap<Integer, RegionWithVariance>();
@@ -190,17 +190,17 @@ public class EMP_breakdown implements RegionalizationMethod {
         return avgInitialization;
     }
     public static Triplet<int[], Map<Integer, RegionWithVariance>, List<Integer>> region_initialization_var(int[] labels,
-                                                                                                           ArrayList<Integer> seedAreas,
-                                                                                                           SpatialGrid r,
-                                                                                                           ArrayList<Long> minAttr,
-                                                                                                           Double minUpperBound,
-                                                                                                           ArrayList<Long> maxAttr,
-                                                                                                           Double maxLowerBound,
-                                                                                                           ArrayList<Long> avgAttr,
-                                                                                                           ArrayList<Long> varAttr,
-                                                                                                           Double varLowerBound,
-                                                                                                           Double varUpperBound,
-                                                                                                           ArrayList<Long> sumAttr
+                                                                                                            ArrayList<Integer> seedAreas,
+                                                                                                            SpatialGrid r,
+                                                                                                            ArrayList<Long> minAttr,
+                                                                                                            Double minUpperBound,
+                                                                                                            ArrayList<Long> maxAttr,
+                                                                                                            Double maxLowerBound,
+                                                                                                            ArrayList<Long> avgAttr,
+                                                                                                            ArrayList<Long> varAttr,
+                                                                                                            Double varLowerBound,
+                                                                                                            Double varUpperBound,
+                                                                                                            ArrayList<Long> sumAttr
     ){
         int cId; //Counter for numbering the regions
         Map<Integer, RegionWithVariance> regionList = new HashMap<Integer, RegionWithVariance>();
@@ -585,19 +585,19 @@ public class EMP_breakdown implements RegionalizationMethod {
     }
 
     public static Quartet<int[], Map<Integer, RegionWithVariance>, List<Integer>, List<Integer>> region_initialization(int[] labels,
-                                                                                                           ArrayList<Integer> seedAreas,
-                                                                                                           SpatialGrid r,
-                                                                                                           ArrayList<Long> minAttr,
-                                                                                                           Double minUpperBound,
-                                                                                                           ArrayList<Long> maxAttr,
-                                                                                                           Double maxLowerBound,
-                                                                                                           ArrayList<Long> avgAttr,
-                                                                                                           Double avgLowerBound,
-                                                                                                           Double avgUpperBound,
-                                                                                                           ArrayList<Long> varAttr,
-                                                                                                           Double varLowerBound,
-                                                                                                           Double varUpperBound,
-                                                                                                           ArrayList<Long> sumAttr
+                                                                                                                       ArrayList<Integer> seedAreas,
+                                                                                                                       SpatialGrid r,
+                                                                                                                       ArrayList<Long> minAttr,
+                                                                                                                       Double minUpperBound,
+                                                                                                                       ArrayList<Long> maxAttr,
+                                                                                                                       Double maxLowerBound,
+                                                                                                                       ArrayList<Long> avgAttr,
+                                                                                                                       Double avgLowerBound,
+                                                                                                                       Double avgUpperBound,
+                                                                                                                       ArrayList<Long> varAttr,
+                                                                                                                       Double varLowerBound,
+                                                                                                                       Double varUpperBound,
+                                                                                                                       ArrayList<Long> sumAttr
     ){
         int cId; //Counter for numbering the regions
         Map<Integer, RegionWithVariance> regionList = new HashMap<Integer, RegionWithVariance>();
@@ -1344,16 +1344,16 @@ public class EMP_breakdown implements RegionalizationMethod {
         return avgInitialization;
     }
     public static Pair<int[], Map<Integer, Region>> sumcount_construction(int[] labels,
-                                             Map<Integer, Region> regionList,
-                                             SpatialGrid r,
-                                             ArrayList<Long> minAttr,
-                                             ArrayList<Long> maxAttr,
-                                             ArrayList<Long> avgAttr,
-                                             ArrayList<Long> sumAttr,
-                                             Double sumLowerBound,
-                                             Double sumUpperBound,
-                                             Double countLowerBound,
-                                             Double countUpperBound){
+                                                                          Map<Integer, Region> regionList,
+                                                                          SpatialGrid r,
+                                                                          ArrayList<Long> minAttr,
+                                                                          ArrayList<Long> maxAttr,
+                                                                          ArrayList<Long> avgAttr,
+                                                                          ArrayList<Long> sumAttr,
+                                                                          Double sumLowerBound,
+                                                                          Double sumUpperBound,
+                                                                          Double countLowerBound,
+                                                                          Double countUpperBound){
         boolean updated = true;
         while (updated) {
             //checkLabels(labels, regionList);
@@ -1634,17 +1634,17 @@ public class EMP_breakdown implements RegionalizationMethod {
         return  sumcount_result;
     }
     public static Pair<int[], Map<Integer, RegionWithVariance>> sumcount_construction_var(int[] labels,
-                                                                          Map<Integer, RegionWithVariance> regionList,
-                                                                          SpatialGrid r,
-                                                                          ArrayList<Long> minAttr,
-                                                                          ArrayList<Long> maxAttr,
-                                                                          ArrayList<Long> avgAttr,
-                                                                          ArrayList<Long> varAttr,
-                                                                          ArrayList<Long> sumAttr,
-                                                                          Double sumLowerBound,
-                                                                          Double sumUpperBound,
-                                                                          Double countLowerBound,
-                                                                          Double countUpperBound){
+                                                                                          Map<Integer, RegionWithVariance> regionList,
+                                                                                          SpatialGrid r,
+                                                                                          ArrayList<Long> minAttr,
+                                                                                          ArrayList<Long> maxAttr,
+                                                                                          ArrayList<Long> avgAttr,
+                                                                                          ArrayList<Long> varAttr,
+                                                                                          ArrayList<Long> sumAttr,
+                                                                                          Double sumLowerBound,
+                                                                                          Double sumUpperBound,
+                                                                                          Double countLowerBound,
+                                                                                          Double countUpperBound){
         boolean updated = true;
         if(var_debug){
             System.out.println("No. of regions before sum " + regionList.size());
@@ -1964,30 +1964,30 @@ public class EMP_breakdown implements RegionalizationMethod {
 
 
     public static RegionCollectionWithVariance construction_phase_breakdown_minmaxNoRepeat_variance(ArrayList<Integer> idList,
-                                                                               ArrayList<Long> disAttr,
-                                                                               SpatialGrid r,
-                                                                               ArrayList<Long> minAttr,
-                                                                               Double minLowerBound,
-                                                                               Double minUpperBound,
+                                                                                                    ArrayList<Long> disAttr,
+                                                                                                    SpatialGrid r,
+                                                                                                    ArrayList<Long> minAttr,
+                                                                                                    Double minLowerBound,
+                                                                                                    Double minUpperBound,
 
-                                                                               ArrayList<Long> maxAttr,
-                                                                               Double maxLowerBound,
-                                                                               Double maxUpperBound,
+                                                                                                    ArrayList<Long> maxAttr,
+                                                                                                    Double maxLowerBound,
+                                                                                                    Double maxUpperBound,
 
-                                                                               ArrayList<Long> avgAttr,
-                                                                               Double avgLowerBound,
-                                                                               Double avgUpperBound,
+                                                                                                    ArrayList<Long> avgAttr,
+                                                                                                    Double avgLowerBound,
+                                                                                                    Double avgUpperBound,
 
-                                                                               ArrayList<Long> varAttr,
-                                                                               Double varLowerBound,
-                                                                               Double varUpperBound,
+                                                                                                    ArrayList<Long> varAttr,
+                                                                                                    Double varLowerBound,
+                                                                                                    Double varUpperBound,
 
-                                                                               ArrayList<Long> sumAttr,
-                                                                               Double sumLowerBound,
-                                                                               Double sumUpperBound,
+                                                                                                    ArrayList<Long> sumAttr,
+                                                                                                    Double sumLowerBound,
+                                                                                                    Double sumUpperBound,
 
-                                                                               Double countLowerBound,
-                                                                               Double countUpperBound, boolean repeatQuery, String recordName) {
+                                                                                                    Double countLowerBound,
+                                                                                                    Double countUpperBound, boolean repeatQuery, String recordName) {
         int maxIt = 100;
         RegionWithVariance.setRange(minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, varLowerBound, varUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound);
 
@@ -2020,14 +2020,14 @@ public class EMP_breakdown implements RegionalizationMethod {
                 Double preCountLowerBound = (Double) ois.readObject();
                 Double preCountUpperBound = (Double) ois.readObject();
                 if(preMinAttr.equals(minAttr) && preMaxAttr.equals(maxAttr) && preMinLowerBound.equals(minLowerBound) && preMinUpperBound.equals(minUpperBound) && preMaxLowerBound .equals( maxLowerBound) && preMaxUpperBound .equals( maxUpperBound)){
-                        stateOfChange = 1;
+                    stateOfChange = 1;
                 }else{
                     System.out.println("Different MIN/MAX");
                     differentConstraint = true;
                 }
                 if(!differentConstraint){
                     if(preVarAttr.equals(varAttr) && preVarLowerBound.equals(varLowerBound) && preVarUpperBound.equals(varUpperBound)){
-                            stateOfChange = 2;
+                        stateOfChange = 2;
                     }else{
                         System.out.println("Different VAR");
                         differentConstraint = true;
@@ -2058,7 +2058,7 @@ public class EMP_breakdown implements RegionalizationMethod {
             }
         }
         //if(var_debug)
-            System.out.println("Different constraint check: " + differentConstraint + " " + stateOfChange);
+        System.out.println("Different constraint check: " + differentConstraint + " " + stateOfChange);
         ObjectOutputStream oos = null;
         if(repeatQuery && differentConstraint){
 
@@ -2102,22 +2102,25 @@ public class EMP_breakdown implements RegionalizationMethod {
         //First step: Filtering and seeding for MIN, MAX.
         Pair<int[], ArrayList<Integer>> minmaxResult = null;
         if(repeatQuery && (!differentConstraint || stateOfChange > 0)){
-                try{
-                    ois = new ObjectInputStream(new FileInputStream(recordName + "/minmax.txt"));
-                    minmaxResult = (Pair<int[], ArrayList<Integer>>) ois.readObject();
-                    //minmaxseedAreas = (ArrayList<Integer>)ois.readObject();
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-
-        }else{
-            minmaxResult = filtering_and_seeding(areas, minAttr, minLowerBound, minUpperBound, maxAttr, maxLowerBound, maxUpperBound, sumAttr, sumUpperBound);
             try{
-                oos = new ObjectOutputStream(new FileOutputStream(recordName + "/minmax.txt", true));
-                oos.writeObject(minmaxResult);
+                ois = new ObjectInputStream(new FileInputStream(recordName + "/minmax.txt"));
+                minmaxResult = (Pair<int[], ArrayList<Integer>>) ois.readObject();
+                //minmaxseedAreas = (ArrayList<Integer>)ois.readObject();
             }catch(Exception e){
                 e.printStackTrace();
             }
+
+        }else{
+            minmaxResult = filtering_and_seeding(areas, minAttr, minLowerBound, minUpperBound, maxAttr, maxLowerBound, maxUpperBound, sumAttr, sumUpperBound);
+            if(repeatQuery){
+                try{
+                    oos = new ObjectOutputStream(new FileOutputStream(recordName + "/minmax.txt", true));
+                    oos.writeObject(minmaxResult);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+
 
         }
         int[] minmaxlabels = minmaxResult.getValue0();
@@ -2319,25 +2322,25 @@ public class EMP_breakdown implements RegionalizationMethod {
 
 
     public static void  set_input_minmax_var(String fileName,
-                                                  String minAttrName,
-                                                  Double minAttrLow,
-                                                  Double minAttrHigh,
-                                                  String maxAttrName,
-                                                  Double maxAttrLow,
-                                                  Double maxAttrHigh,
-                                                  String avgAttrName,
-                                                  Double avgAttrLow,
-                                                  Double avgAttrHigh,
-                                                  String varAttrName,
-                                                  Double varAttrLow,
-                                                  Double varAttrHigh,
-                                                  String sumAttrName,
-                                                  Double sumAttrLow,
-                                                  Double sumAttrHigh,
-                                                  Double countLow,
-                                                  Double countHigh,
-                                                  String distAttrName,
-                                                  boolean repeatQuery
+                                             String minAttrName,
+                                             Double minAttrLow,
+                                             Double minAttrHigh,
+                                             String maxAttrName,
+                                             Double maxAttrLow,
+                                             Double maxAttrHigh,
+                                             String avgAttrName,
+                                             Double avgAttrLow,
+                                             Double avgAttrHigh,
+                                             String varAttrName,
+                                             Double varAttrLow,
+                                             Double varAttrHigh,
+                                             String sumAttrName,
+                                             Double sumAttrLow,
+                                             Double sumAttrHigh,
+                                             Double countLow,
+                                             Double countHigh,
+                                             String distAttrName,
+                                             boolean repeatQuery
 
     ) throws Exception {
         double startTime = System.currentTimeMillis()/ 1000.0;
@@ -2670,30 +2673,30 @@ public class EMP_breakdown implements RegionalizationMethod {
 
     }
     public static RegionCollectionWithVariance construction_phase_changeOfAttribute(ArrayList<Integer> idList,
-                                                                                                    ArrayList<Long> disAttr,
-                                                                                                    SpatialGrid r,
-                                                                                                    ArrayList<Long> minAttr,
-                                                                                                    Double minLowerBound,
-                                                                                                    Double minUpperBound,
+                                                                                    ArrayList<Long> disAttr,
+                                                                                    SpatialGrid r,
+                                                                                    ArrayList<Long> minAttr,
+                                                                                    Double minLowerBound,
+                                                                                    Double minUpperBound,
 
-                                                                                                    ArrayList<Long> maxAttr,
-                                                                                                    Double maxLowerBound,
-                                                                                                    Double maxUpperBound,
+                                                                                    ArrayList<Long> maxAttr,
+                                                                                    Double maxLowerBound,
+                                                                                    Double maxUpperBound,
 
-                                                                                                    ArrayList<Long> avgAttr,
-                                                                                                    Double avgLowerBound,
-                                                                                                    Double avgUpperBound,
+                                                                                    ArrayList<Long> avgAttr,
+                                                                                    Double avgLowerBound,
+                                                                                    Double avgUpperBound,
 
-                                                                                                    ArrayList<Long> varAttr,
-                                                                                                    Double varLowerBound,
-                                                                                                    Double varUpperBound,
+                                                                                    ArrayList<Long> varAttr,
+                                                                                    Double varLowerBound,
+                                                                                    Double varUpperBound,
 
-                                                                                                    ArrayList<Long> sumAttr,
-                                                                                                    Double sumLowerBound,
-                                                                                                    Double sumUpperBound,
+                                                                                    ArrayList<Long> sumAttr,
+                                                                                    Double sumLowerBound,
+                                                                                    Double sumUpperBound,
 
-                                                                                                    Double countLowerBound,
-                                                                                                    Double countUpperBound, boolean repeatQuery, String recordName) {
+                                                                                    Double countLowerBound,
+                                                                                    Double countUpperBound, boolean repeatQuery, String recordName) {
         int maxIt = 100;
         RegionWithVariance.setRange(minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, varLowerBound, varUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound);
 
@@ -2768,7 +2771,7 @@ public class EMP_breakdown implements RegionalizationMethod {
         System.out.println("Different constraint check: " + differentConstraint + " " + stateOfChange);
 
         ObjectOutputStream oos = null;
-        if(!differentConstraint){
+        if(repeatQuery && !differentConstraint){
             try{
                 //ObjectInputStream ois = null;
                 ois = new ObjectInputStream(new FileInputStream(recordName + "/bestCollection.txt"));
@@ -2836,12 +2839,15 @@ public class EMP_breakdown implements RegionalizationMethod {
         }else if(repeatQuery && (differentConstraint && stateOfChange > 1)){}
         else{
             minmaxResult = filtering_and_seeding(areas, minAttr, minLowerBound, minUpperBound, maxAttr, maxLowerBound, maxUpperBound, sumAttr, sumUpperBound);
-            try{
-                oos = new ObjectOutputStream(new FileOutputStream(recordName + "/minmax.txt", true));
-                oos.writeObject(minmaxResult);
-            }catch(Exception e){
-                e.printStackTrace();
+            if(repeatQuery){
+                try{
+                    oos = new ObjectOutputStream(new FileOutputStream(recordName + "/minmax.txt", true));
+                    oos.writeObject(minmaxResult);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
             }
+
             minmaxlabels = minmaxResult.getValue0();
             minmaxseedAreas = minmaxResult.getValue1();
 
@@ -2869,12 +2875,15 @@ public class EMP_breakdown implements RegionalizationMethod {
             System.exit(12138);
         }
         try{
-            if(hasVar)
-                varOis =  new ObjectInputStream(new FileInputStream(recordName + "/var.txt"));
-            if(hasAvg)
-                avgOis = new ObjectInputStream(new FileInputStream(recordName + "/avg.txt"));
-            if(!differentConstraint)
-                sumcountOis = new ObjectInputStream(new FileInputStream(recordName + "/sumcount.txt"));
+            if(repeatQuery){
+                if(hasVar)
+                    varOis =  new ObjectInputStream(new FileInputStream(recordName + "/var.txt"));
+                if(hasAvg)
+                    avgOis = new ObjectInputStream(new FileInputStream(recordName + "/avg.txt"));
+                if(!differentConstraint)
+                    sumcountOis = new ObjectInputStream(new FileInputStream(recordName + "/sumcount.txt"));
+            }
+
             //sumOos = new ObjectOutputStream(new FileOutputStream(recordName + "/sumcount.txt", true));
 
         }catch (Exception e){
@@ -2885,9 +2894,10 @@ public class EMP_breakdown implements RegionalizationMethod {
 
             int[] labels = null;
             ArrayList<Integer> seedAreas = null;
-            if(differentConstraint && stateOfChange <= 1){
+            if(!repeatQuery || differentConstraint && stateOfChange <= 1){
                 labels = minmaxlabels.clone();
                 seedAreas = new ArrayList<>(minmaxseedAreas);
+                //System.out.println(seedAreas);
             }
             Map<Integer, RegionWithVariance> regionList = null;
 
@@ -2938,14 +2948,17 @@ public class EMP_breakdown implements RegionalizationMethod {
                 else{
                     avgInitialization = region_initialization(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, avgLowerBound, avgUpperBound, varAttr, varLowerBound, varUpperBound, sumAttr);
                     try{
-                        File f = new File(recordName + "/avg.txt");
-                        if(!f.exists() || f.length() == 0){
-                            oos = new ObjectOutputStream(new FileOutputStream(recordName + "/avg.txt"));
-                            oos.writeObject(avgInitialization);
-                        }else{
-                            oos = new EMPObjectOutputStream(new FileOutputStream(recordName + "/avg.txt", true));
-                            oos.writeObject(avgInitialization);
+                        if(repeatQuery){
+                            File f = new File(recordName + "/avg.txt");
+                            if(!f.exists() || f.length() == 0){
+                                oos = new ObjectOutputStream(new FileOutputStream(recordName + "/avg.txt"));
+                                oos.writeObject(avgInitialization);
+                            }else{
+                                oos = new EMPObjectOutputStream(new FileOutputStream(recordName + "/avg.txt", true));
+                                oos.writeObject(avgInitialization);
+                            }
                         }
+
                     }catch(Exception e){
                         e.printStackTrace();
                     }
@@ -3014,14 +3027,18 @@ public class EMP_breakdown implements RegionalizationMethod {
             }else{
                 result = sumcount_construction_var(labels, regionList, r, minAttr, maxAttr, avgAttr, varAttr, sumAttr, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound);
                 try{
-                    File f = new File(recordName + "/sumcount.txt");
-                    if(!f.exists() || f.length() == 0){
-                        oos = new ObjectOutputStream(new FileOutputStream(recordName + "/sumcount.txt"));
-                        oos.writeObject(result);
-                    }else{
-                        oos = new EMPObjectOutputStream(new FileOutputStream(recordName + "/sumcount.txt", true));
-                        oos.writeObject(result);
+
+                    if(repeatQuery){
+                        File f = new File(recordName + "/sumcount.txt");
+                        if(!f.exists() || f.length() == 0){
+                            oos = new ObjectOutputStream(new FileOutputStream(recordName + "/sumcount.txt"));
+                            oos.writeObject(result);
+                        }else{
+                            oos = new EMPObjectOutputStream(new FileOutputStream(recordName + "/sumcount.txt", true));
+                            oos.writeObject(result);
+                        }
                     }
+
                     //oos = new ObjectOutputStream(new FileOutputStream(recordName + "/sumcount.txt", true));
                     //oos.writeObject(result);
                 }catch(Exception e){
@@ -3095,8 +3112,11 @@ public class EMP_breakdown implements RegionalizationMethod {
 
         }
         try{
-            oos = new ObjectOutputStream(new FileOutputStream(recordName + "/bestCollection.txt"));
-            oos.writeObject(bestCollection);
+            if(repeatQuery){
+                oos = new ObjectOutputStream(new FileOutputStream(recordName + "/bestCollection.txt"));
+                oos.writeObject(bestCollection);
+            }
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -3128,7 +3148,7 @@ public class EMP_breakdown implements RegionalizationMethod {
 
         );
 
-        }
+    }
 
 }
 
