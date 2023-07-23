@@ -20,7 +20,8 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class EMP_breakdown implements RegionalizationMethod {
+//public class EMP_breakdown implements RegionalizationMethod {
+public class EMP_breakdown{
     static boolean debug = false;
     static boolean var_debug = false;
     static boolean check_p_afterAVG = false;
@@ -53,16 +54,16 @@ public class EMP_breakdown implements RegionalizationMethod {
     RegionCollection constructionPartition;
     TabuReturn finalPartition;
 
-    @Override
+    //@Override
     public int getP() {
         return constructionPartition.getMax_p();
     }
 
-    @Override
+    //@Override
     public int[] getRegionLabels() {
         return finalPartition.labels;
     }
-    @Override
+    //@Override
     public void execute_regionalization(Map<Integer, Set<Integer>> neighbor,
                                         ArrayList<Long> disAttr,
                                         ArrayList<Long> sumAttr,
@@ -2049,7 +2050,7 @@ public class EMP_breakdown implements RegionalizationMethod {
                 stateOfChange = 0;
 
             }catch(FileNotFoundException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 differentConstraint = true;
                 stateOfChange = 0;
             }catch(Exception e){
@@ -2918,12 +2919,23 @@ public class EMP_breakdown implements RegionalizationMethod {
                     regionList = varInitialization.getValue1();
                 }else{
                     varInitialization = region_initialization_var(labels, seedAreas, r, minAttr, minUpperBound, maxAttr, maxLowerBound, avgAttr, varAttr, varLowerBound, varUpperBound, sumAttr);
-                    try{
-                        oos = new ObjectOutputStream(new FileOutputStream(recordName + "/var.txt", true));
-                        oos.writeObject(varInitialization);
-                    }catch(Exception e){
-                        e.printStackTrace();
+                    if(repeatQuery){
+                        File f = new File(recordName + "/var.txt");
+                        try{
+                            if(!f.exists() || f.length() == 0){
+                                oos = new ObjectOutputStream(new FileOutputStream(recordName + "/var.txt"));
+                                oos.writeObject(varInitialization);
+                            }else{
+                                oos = new EMPObjectOutputStream(new FileOutputStream(recordName + "/var.txt", true));
+                                oos.writeObject(varInitialization);
+                            }
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+
                     }
+
                     labels = varInitialization.getValue0();
                     regionList = varInitialization.getValue1();
                 }

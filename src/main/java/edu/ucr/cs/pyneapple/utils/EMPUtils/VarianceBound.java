@@ -17,7 +17,7 @@ public class VarianceBound {
     public static double[] findBoundary(double N, double varianceSum, double varianceSumSquare, double V) {
         //Need to set the boundary
         double lowerBound = 0;
-        double upperBound = 1000000000;
+        double upperBound = 100000;
 
         BisectionSolver solver = new BisectionSolver();
 
@@ -32,7 +32,7 @@ public class VarianceBound {
         double upperBoundary = upperBound;
 
         try {
-            lowerBoundary = solver.solve(1000, f, lowerBound, 1000000000);
+            lowerBoundary = solver.solve(1000, f, lowerBound, 10000);
         } catch (NoBracketingException e) {
             // lower boundary remains the same
         }
