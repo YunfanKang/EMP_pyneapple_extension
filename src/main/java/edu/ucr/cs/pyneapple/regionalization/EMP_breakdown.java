@@ -23,6 +23,7 @@ import java.util.*;
 //public class EMP_breakdown implements RegionalizationMethod {
 public class EMP_breakdown{
     static boolean debug = false;
+    static boolean repeat_debug = true;
     static boolean var_debug = false;
     static boolean check_p_afterAVG = false;
     static boolean labelCheck = false;
@@ -2035,6 +2036,14 @@ public class EMP_breakdown{
                     }
                 }
                 if(!differentConstraint){
+                    if(preAvgAttr.equals(avgAttr) && preAvgLowerBound.equals(avgLowerBound) && preAvgUpperBound.equals(avgUpperBound)){
+                        stateOfChange = 2;
+                    }else{
+                        System.out.println("Different AVG");
+                        differentConstraint = true;
+                    }
+                }
+                if(!differentConstraint){
                     if(preSumAttr.equals(sumAttr) && preSumUpperBound.equals(sumUpperBound) && preSumLowerBound.equals(sumLowerBound) &&  preCountUpperBound.equals(countUpperBound) && preCountLowerBound.equals(countLowerBound)){
                         stateOfChange = 3;
                     }else{
@@ -2557,7 +2566,8 @@ public class EMP_breakdown{
             long totalWDS = EMPTabu.calculateWithinRegionDistance_var(rc.getRegionMap(), distanceMatrix);
             //System.out.println("totalWithinRegionDistance before tabu: \n" + totalWDS);
             int tabuLength = 10;
-            int max_no_move = distAttr.size();
+            //int max_no_move = distAttr.size();
+            int max_no_move =1000;
             //checkLabels(rc.getLabels(), rc.getRegionList());
 
             //System.out.println("Start tabu");
@@ -2566,11 +2576,12 @@ public class EMP_breakdown{
                 System.out.println(rc.getRegionMap().keySet());
                 checkLabels_var(rc.getLabels(), rc.getRegionMap());
             }
-            TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, varAttr, sumAttr, avgAttr);
-            int[] labels = tr.labels;
+            //TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, varAttr, sumAttr, avgAttr);
+            //int[] labels = tr.labels;
             //System.out.println(labels.length);
-            long WDSDifference = totalWDS - tr.WDS;
+            //long WDSDifference = totalWDS - tr.WDS;
             //int[] labels = SimulatedAnnealing.performSimulatedAnnealing(rc.getLabels(), rc.getRegionList(), sg, pdist((distAttr)), minAttr, maxAttr, sumAttr, avgAttr);
+            int[] labels = rc.getLabels();
             double endTime = System.currentTimeMillis()/ 1000.0;
             //System.out.println("MaxP: " + max_p);
             double heuristicDuration = endTime - constructionEnd;
@@ -2589,19 +2600,19 @@ public class EMP_breakdown{
                 }
             }
             w.close();
-            //System.out.println("minTime: " + minTime);
-            //System.out.println("avgTime: " + avgTime);
-            //System.out.println("sumTime: " + sumTime);
+            System.out.println("minTime: " + minTime);
+            System.out.println("avgTime: " + avgTime);
+            System.out.println("sumTime: " + sumTime);
 
             System.out.println("Iteration: " + i);
             System.out.println("p: "+ max_p);
             System.out.println("Construction time: " + constructionDuration);
             System.out.println("Tabu search time: " + heuristicDuration);
             System.out.println("Heterogeneity score before Tabu: "  + totalWDS);
-            System.out.println("Heterogeneity score after Tabu: " + tr.WDS);
+            System.out.println("Heterogeneity score after Tabu: " + totalWDS);
             System.out.println("Number of unassigned areas: " + unassignedCount + "\n");
 
-            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + tr.WDS + ", " + WDSDifference + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
+            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + totalWDS + ", " + 0 + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
             csvWriter.flush();
             minTime = 0;
             avgTime = 0;
@@ -2709,26 +2720,88 @@ public class EMP_breakdown{
         ObjectInputStream ois = null;
         boolean differentConstraint = false;
         int stateOfChange = 0;
+        Double startTime =  System.currentTimeMillis() / 1000.0;
         if(repeatQuery){
             try{
                 ois = new ObjectInputStream(new FileInputStream(recordName + "/constraints.txt"));
+                String flag = (String) ois.readObject();
+                System.out.println(flag);
                 ArrayList<Long> preMinAttr = (ArrayList<Long>) ois.readObject();
                 Double preMinLowerBound = (Double) ois.readObject();
                 Double preMinUpperBound = (Double) ois.readObject();
+                flag = (String) ois.readObject();
+                System.out.println(flag);
                 ArrayList<Long> preMaxAttr = (ArrayList<Long>) ois.readObject();
                 Double preMaxLowerBound = (Double) ois.readObject();
                 Double preMaxUpperBound = (Double) ois.readObject();
+                flag = (String) ois.readObject();
+                System.out.println(flag);
                 ArrayList<Long> preAvgAttr = (ArrayList<Long>) ois.readObject();
                 Double preAvgLowerBound = (Double) ois.readObject();
                 Double preAvgUpperBound = (Double) ois.readObject();
+                flag = (String) ois.readObject();
+                System.out.println(flag);
                 ArrayList<Long> preVarAttr = (ArrayList<Long>) ois.readObject();
                 Double preVarLowerBound = (Double) ois.readObject();
                 Double preVarUpperBound = (Double) ois.readObject();
+                flag = (String) ois.readObject();
+                System.out.println(flag);
                 ArrayList<Long> preSumAttr = (ArrayList<Long>) ois.readObject();
                 Double preSumLowerBound = (Double) ois.readObject();
                 Double preSumUpperBound = (Double) ois.readObject();
+                flag = (String) ois.readObject();
+                System.out.println(flag);
                 Double preCountLowerBound = (Double) ois.readObject();
                 Double preCountUpperBound = (Double) ois.readObject();
+                if(repeat_debug){
+                    System.out.println("MIN/MAX");
+                    System.out.println(preMinAttr.equals(minAttr));
+                    if(!preMinAttr.equals(minAttr)){
+                        for(int i = 0; i < preMinAttr.size(); i++){
+                            if(!preMinAttr.get(i).equals(minAttr.get(i))){
+                                System.out.println(i + " " + preMinAttr.get(i) + " " + minAttr.get(i));
+                            }
+                        }
+                    }
+                    System.out.println(preMaxAttr.equals(maxAttr) + " lengt h" + preMaxAttr.size() + " " + maxAttr.size());
+                    if(!preMaxAttr.equals(maxAttr)){
+                        for(int i = 0; i < preMaxAttr.size(); i++){
+                            if(!preMaxAttr.get(i).equals(maxAttr.get(i))){
+                                System.out.println(i + " " + preMaxAttr.get(i) + " " + maxAttr.get(i));
+                            }
+                        }
+                    }
+
+                    System.out.println(preMinLowerBound.equals(minLowerBound));
+                    System.out.println(preMinUpperBound.equals(minUpperBound));
+                    System.out.println(preMaxLowerBound .equals( maxLowerBound));
+                    System.out.println(preMaxUpperBound .equals( maxUpperBound));
+
+                    System.out.println();
+                    System.out.println("AVG");
+                    if(!preAvgAttr.equals(avgAttr)){
+                        for(int i = 0; i < preAvgAttr.size(); i++){
+                            if(!preAvgAttr.get(i).equals(avgAttr.get(i))){
+                                System.out.println(i + " " + preAvgAttr.get(i) + " " + avgAttr.get(i));
+                            }
+                        }
+                    }
+                    System.out.println(preAvgLowerBound.equals(avgLowerBound));
+                    System.out.println(preAvgUpperBound.equals(avgUpperBound));
+
+                    System.out.println();
+                    System.out.println("SUM");
+                    if(!preSumAttr.equals(sumAttr)){
+                        for(int i = 0; i < preSumAttr.size(); i++){
+                            if(!preSumAttr.get(i).equals(sumAttr.get(i))){
+                                System.out.println(i + " " + preSumAttr.get(i) + " " + sumAttr.get(i));
+                            }
+                        }
+                    }
+
+                }
+
+                //preMinAttr.equals(minAttr)
                 if(preMinAttr.equals(minAttr) && preMaxAttr.equals(maxAttr) && preMinLowerBound.equals(minLowerBound) && preMinUpperBound.equals(minUpperBound) && preMaxLowerBound .equals( maxLowerBound) && preMaxUpperBound .equals( maxUpperBound)){
                     stateOfChange = 1;
                 }else{
@@ -2736,10 +2809,10 @@ public class EMP_breakdown{
                     differentConstraint = true;
                 }
                 if(!differentConstraint){
-                    if(preVarAttr.equals(varAttr) && preVarLowerBound.equals(varLowerBound) && preVarUpperBound.equals(varUpperBound)){
+                    if(preVarAttr.equals(varAttr) && preVarLowerBound.equals(varLowerBound) && preVarUpperBound.equals(varUpperBound) && preAvgAttr.equals(avgAttr) && preAvgLowerBound.equals(avgLowerBound) && preAvgUpperBound.equals(avgUpperBound)){
                         stateOfChange = 2;
                     }else{
-                        System.out.println("Different VAR");
+                        System.out.println("Different AVG/VAR");
                         differentConstraint = true;
                     }
                 }
@@ -2767,8 +2840,9 @@ public class EMP_breakdown{
                 e.printStackTrace();
             }
         }
-
+        Double readTime =  System.currentTimeMillis() / 1000.0;
         //if(var_debug)
+        System.out.println("Time for reading the pre-results: " + (readTime - startTime));
         System.out.println("Different constraint check: " + differentConstraint + " " + stateOfChange);
 
         ObjectOutputStream oos = null;
@@ -2792,21 +2866,27 @@ public class EMP_breakdown{
                 }
 
                 oos = new ObjectOutputStream(new FileOutputStream(recordName + "/constraints.txt"));
+                oos.writeObject("MIN");
                 oos.writeObject(minAttr);
                 oos.writeObject(minLowerBound);
                 oos.writeObject(minUpperBound);
+                oos.writeObject("MAX");
                 oos.writeObject(maxAttr);
                 oos.writeObject(maxLowerBound);
                 oos.writeObject(maxUpperBound);
+                oos.writeObject("AVG");
                 oos.writeObject(avgAttr);
                 oos.writeObject(avgLowerBound);
                 oos.writeObject(avgUpperBound);
+                oos.writeObject("VAR");
                 oos.writeObject(varAttr);
                 oos.writeObject(varLowerBound);
                 oos.writeObject(varUpperBound);
+                oos.writeObject("SUM");
                 oos.writeObject(sumAttr);
                 oos.writeObject(sumLowerBound);
                 oos.writeObject(sumUpperBound);
+                oos.writeObject("COUNT");
                 oos.writeObject(countLowerBound);
                 oos.writeObject(countUpperBound);
 
@@ -2815,7 +2895,8 @@ public class EMP_breakdown{
             }
         }
         int max_p = 0;
-
+        Double writeTime =  System.currentTimeMillis() / 1000.0;
+        System.out.println("Time for writing the current constraints: " + (writeTime - readTime));
         RegionCollectionWithVariance bestCollection = null;
         double minStart = System.currentTimeMillis() / 1000.0;
 
@@ -2892,7 +2973,7 @@ public class EMP_breakdown{
         }
         //ObjectOutputStream sumOos = null;
         for (int it = 0; it < maxIt; it++) {
-
+            double avgStart = System.currentTimeMillis() / 1000.0;
             int[] labels = null;
             ArrayList<Integer> seedAreas = null;
             if(!repeatQuery || differentConstraint && stateOfChange <= 1){
@@ -2989,7 +3070,8 @@ public class EMP_breakdown{
                 checkLabels_var(labels, regionList);
             }
             double avgEnd = System.currentTimeMillis() / 1000.0;
-            avgTime += (avgEnd - minEnd);
+            //avgTime += (avgEnd - minEnd);
+            avgTime += (avgEnd - avgStart);
             //Start sum and count
             if (var_debug) {
                 System.out.println("-------------");

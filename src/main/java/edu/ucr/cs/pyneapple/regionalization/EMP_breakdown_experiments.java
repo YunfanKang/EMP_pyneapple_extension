@@ -4,15 +4,22 @@ public class EMP_breakdown_experiments {
     public static void main(String[] args) throws Exception {
         //repeatTest();
         //nonRepeatTest();
-        //varRangeTest();
-        repeatScalabilityTest("30k");
+        varRangeTest();
+        //repeatScalabilityTest("30k", true);
+        //repeatScalabilityTestGeneral("data/10K/10K.shp", true);
+        //repeatScalabilityTestGeneral("data/20K/20K.shp", true);
+        //repeatScalabilityTestGeneral("data/30K/30K.shp", true);
+       // repeatScalabilityTestGeneral("data/40K/30K.shp", true);
+        repeatScalabilityTestGeneral("data/20K_sum/20K.shp", true);
+        //repeatScalabilityTestGeneral("data/50K/50K.shp", true);
+        //testEMPLarge();
 
     }
     static void varRangeTest() throws Exception{
         String normalDataset = "data/LACounty/La_county_noisland.shp";
         System.out.println("Var -inf - 10000");
-        Double[] varLow = {0.0, 5000.0, 10000.0, 15000.0};
-        Double[] varHigh = {10000.0, 15000.0, 20000.0, 25000.0};
+        Double[] varLow = {0.0, 5000.0, 10000.0, 15000.0, 0.0, 2500.0, 5000.0, 7500.0};
+        Double[] varHigh = {10000.0, 15000.0, 20000.0, 25000.0, 20000.0, 17500.0, 15000.0, 12500.0};
         for(int i = 0; i < varLow.length; i++){
             System.out.println("Var " + varLow[i] + " " + varHigh[i]);
             EMP_breakdown.set_input_minmax_var(normalDataset,
@@ -131,8 +138,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "employed",
-                2000.0,
-                4000.0,
+                1500.0,
+                3500.0,
                 "households",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -154,8 +161,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "employed",
-                2000.0,
-                4000.0,
+                1500.0,
+                3500.0,
                 "households",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -178,8 +185,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "employed",
-                2000.0,
-                4000.0,
+                1500.0,
+                3500.0,
                 "households",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -201,8 +208,9 @@ public class EMP_breakdown_experiments {
                 "unemployed",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
-                "employed", 2000.0,
-                4000.0,
+                "employed",
+                1500.0,
+                3500.0,
                 "households",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -218,7 +226,7 @@ public class EMP_breakdown_experiments {
 
     }
 
-    static void repeatScalabilityTest(String dataset) throws Exception {
+    static void repeatScalabilityTest(String dataset, boolean repeat) throws Exception {
         String normalDataset = "data/30K/30K.shp";
         String minDataset = "data/30K_min/30K.shp";
         String avgDataset = "data/30K_avg/30K.shp";
@@ -228,7 +236,7 @@ public class EMP_breakdown_experiments {
                 "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 3000.0,
-                "unemployed",
+                "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "employed",
@@ -243,15 +251,38 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                repeat
 
         );
+        EMP_breakdown.set_input_minmax_var(normalDataset,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                3000.0,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "employed",
+                1500.0,
+                3500.0,
+                "households",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "unemployed",
+                20000.0,
+                Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
+                repeat
+
+        );
+
         System.out.println("Change of SUM");
         EMP_breakdown.set_input_minmax_var(sumDataset,
                 "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 3000.0,
-                "unemployed",
+                "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "employed",
@@ -266,7 +297,7 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                repeat
 
         );
         System.out.println("Change of AVG");
@@ -275,7 +306,7 @@ public class EMP_breakdown_experiments {
                 "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 3000.0,
-                "unemployed",
+                "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "employed",
@@ -290,12 +321,39 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                repeat
 
         );
         System.out.println("Change of MIN");
 
         EMP_breakdown.set_input_minmax_var(minDataset,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                3000.0,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "employed",
+                1500.0,
+                3500.0,
+                "households",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "unemployed",
+                20000.0,
+                Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
+                repeat
+
+        );
+
+    }
+    static void testEMPLarge() throws Exception {
+        String dataset = "data/30K/30K.shp";
+        EMP emp = new EMP();
+        emp.set_input(dataset,
                 "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 3000.0,
@@ -305,6 +363,24 @@ public class EMP_breakdown_experiments {
                 "employed",
                 1500.0,
                 3500.0,
+                "unemployed",
+                20000.0,
+                Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households");
+    }
+    static void repeatScalabilityTestGeneral(String dataset, boolean repeat) throws Exception {
+        EMP_breakdown.set_input_minmax_var(dataset,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                3000.0,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "employed",
+                1500.0,
+                3500.0,
                 "households",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -314,9 +390,10 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                repeat
 
         );
 
     }
+
 }
