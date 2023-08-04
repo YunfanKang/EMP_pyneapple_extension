@@ -214,6 +214,7 @@ public class EMP_breakdown{
                 cId = regionList.size() + 1;
                 RegionWithVariance newRegion = new RegionWithVariance(cId);
                 newRegion.addArea(arr_index, minAttr.get(arr_index), maxAttr.get(arr_index), avgAttr.get(arr_index), varAttr.get(arr_index),sumAttr.get(arr_index), r);
+                //System.out.println(newRegion.getAreaList() + "Area var" + varAttr.get(arr_index) + " region VarSum " +newRegion.getVarianceSum());
                 regionList.put(cId, newRegion);
                 labels[arr_index] = cId;
             }
@@ -2576,12 +2577,13 @@ public class EMP_breakdown{
                 System.out.println(rc.getRegionMap().keySet());
                 checkLabels_var(rc.getLabels(), rc.getRegionMap());
             }
-            //TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, varAttr, sumAttr, avgAttr);
-            //int[] labels = tr.labels;
+            System.out.println("Var 2343 " + varAttr.get(2343));
+            TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, avgAttr, varAttr, sumAttr);
+            int[] labels = tr.labels;
             //System.out.println(labels.length);
-            //long WDSDifference = totalWDS - tr.WDS;
+            long WDSDifference = totalWDS - tr.WDS;
             //int[] labels = SimulatedAnnealing.performSimulatedAnnealing(rc.getLabels(), rc.getRegionList(), sg, pdist((distAttr)), minAttr, maxAttr, sumAttr, avgAttr);
-            int[] labels = rc.getLabels();
+            //int[] labels = rc.getLabels();
             double endTime = System.currentTimeMillis()/ 1000.0;
             //System.out.println("MaxP: " + max_p);
             double heuristicDuration = endTime - constructionEnd;
@@ -2609,10 +2611,10 @@ public class EMP_breakdown{
             System.out.println("Construction time: " + constructionDuration);
             System.out.println("Tabu search time: " + heuristicDuration);
             System.out.println("Heterogeneity score before Tabu: "  + totalWDS);
-            System.out.println("Heterogeneity score after Tabu: " + totalWDS);
+            System.out.println("Heterogeneity score after Tabu: " + tr.WDS);
             System.out.println("Number of unassigned areas: " + unassignedCount + "\n");
 
-            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + totalWDS + ", " + 0 + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
+            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + tr.WDS + ", " + (tr.WDS - totalWDS) + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
             csvWriter.flush();
             minTime = 0;
             avgTime = 0;

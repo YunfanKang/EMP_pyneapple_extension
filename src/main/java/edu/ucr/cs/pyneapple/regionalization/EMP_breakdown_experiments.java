@@ -10,9 +10,31 @@ public class EMP_breakdown_experiments {
         //repeatScalabilityTestGeneral("data/20K/20K.shp", true);
         //repeatScalabilityTestGeneral("data/30K/30K.shp", true);
        // repeatScalabilityTestGeneral("data/40K/30K.shp", true);
-        repeatScalabilityTestGeneral("data/20K_sum/20K.shp", true);
+        //repeatScalabilityTestGeneral("data/20K_sum/20K.shp", true);
         //repeatScalabilityTestGeneral("data/50K/50K.shp", true);
         //testEMPLarge();
+        /*EMP_breakdown.set_input_minmax_var("data/LACounty/La_county_noisland.shp",
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "unemployed",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "employed",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
+                0.0,
+                30000.0,
+                "pop2010",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
+                false
+
+        );*/
 
     }
     static void varRangeTest() throws Exception{
@@ -25,7 +47,7 @@ public class EMP_breakdown_experiments {
             EMP_breakdown.set_input_minmax_var(normalDataset,
                     "pop_16up",
                     -Double.POSITIVE_INFINITY,
-                    2000.0,
+                    Double.POSITIVE_INFINITY,
                     "unemployed",
                     -Double.POSITIVE_INFINITY,
                     Double.POSITIVE_INFINITY,

@@ -260,9 +260,18 @@ public class RegionWithVariance implements Serializable {
                 ((this.average * numOfAreas - avgAttr.get(area)) / (numOfAreas - 1) <= RegionWithVariance.avgUpperBound)){
             double tmpVarSum = varianceSum - varAttr.get(area);
             double tmpVarSumSquare = varianceSumSquare - varAttr.get(area) * varAttr.get(area);
-            double tmpVar = tmpVarSumSquare / (this.getCount() - 1.0) - Math.pow(tmpVarSum, 2) / Math.pow(this.getCount() - 1, 2);
-            if(!(tmpVar >= varLowerBound && tmpVar <= varUpperBound))
+            double tmpVar = simpleVariance(this.getCount() - 1, tmpVarSum, tmpVarSumSquare);
+            if(!(tmpVar >= varLowerBound && tmpVar <= varUpperBound)){
+                if(false){
+                    System.out.println(varAttr.get(area));
+                    System.out.println("Variance not satisfied: " + this.getAreaList() +" " + this.getVariance() + " " + this.getVarianceSum() + " " + this.getVarianceSumSquare() +" "+varAttr.get(area)+" "  + tmpVar);
+                    System.out.println("Tmpiance not satisfied: " + this.getAreaList() +" " + tmpVar+ " " + tmpVarSum + " " + tmpVarSumSquare +" "+varAttr.get(area)+" "  + tmpVar);
+
+                }
+
                 return false;
+            }
+
 
             if(this.min == minAttr.get(area) || this.max == maxAttr.get(area)){
                 Double tmpMin = Double.POSITIVE_INFINITY;
