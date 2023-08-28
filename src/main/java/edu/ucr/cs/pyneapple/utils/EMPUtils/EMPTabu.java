@@ -296,6 +296,8 @@ public class EMPTabu {
                                          ArrayList<Long> varAttr,
                                          ArrayList<Long> sumAttr){
         //boolean debug = true;
+        //System.out.println("Var 2343 " + varAttr.get(2343));
+        boolean varDebug = false;
         if(debug){
             int zeroCount = 0;
             int removedCount = 0;
@@ -325,18 +327,23 @@ public class EMPTabu {
         long bestWDS = withinRegionDistance;
 
         while (ni_move_ct <= max_no_move){
-            //System.out.println("Move count " + ni_move_ct);
+            //if(varDebug)
+                //System.out.println("Move count " + ni_move_ct);
             edu.ucr.cs.pyneapple.utils.EMPUtils.Move potentialMove = null;
-            if(debug){
+            if(debug || varDebug){
                 EMP_breakdown.checkLabels_var(labels, regionList);
                 System.out.println(ni_move_ct + " vs " + max_no_move);
             }
 
             if (make_move_flag || potentialAreas.size() == 0){
+
                 potentialAreas = pickMoveAreaNew_var(labels, integerRegionMap,
                         r,
                         dissimMatrix,
                         minAttr, maxAttr, avgAttr, varAttr, sumAttr);
+                if(varDebug){
+                    System.out.println("Movable areas: " + potentialAreas);
+                }
                 Double maxDiff = -Double.POSITIVE_INFINITY;
                 if(debug){
                     System.out.println("potentialAreas: " + potentialAreas);
@@ -642,9 +649,9 @@ public class EMPTabu {
             for(int i = 0; i < rla.size(); i++){
 
                 if (e.getValue().removable(rla.get(i),minAttr, maxAttr, avgAttr, varAttr, sumAttr, r)){
-                    if(debug){
+                    if(false){
                         System.out.println("Area " + rla.get(i) + " can be removed from region " + e.getValue().getId());
-                        System.out.println("Region " +e.getValue().getSum() + " area " +sumAttr.get(rla.get(i)));
+                        //System.out.println("Region " +e.getValue().getSum() + " area " +sumAttr.get(rla.get(i)));
                     }
                     pas_indices.add(i);
                 }

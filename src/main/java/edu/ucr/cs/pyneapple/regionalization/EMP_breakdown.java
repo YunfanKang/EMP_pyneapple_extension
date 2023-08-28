@@ -29,6 +29,10 @@ public class EMP_breakdown{
     static boolean localrec_debug = true;
     static boolean check_p_afterAVG = false;
     static boolean labelCheck = false;
+
+    static double varLowerbound, varUpprbound;
+
+    static int toleranceThreshold =10;
     static int numOfIts = 1;
     static int randFlag[] = {1,1};
     static int rand[] = {0, 1, 2};
@@ -186,6 +190,7 @@ public class EMP_breakdown{
                 cId = regionList.size() + 1;
                 RegionWithVariance newRegion = new RegionWithVariance(cId);
                 newRegion.addArea(arr_index, minAttr.get(arr_index), maxAttr.get(arr_index), avgAttr.get(arr_index), varAttr.get(arr_index),sumAttr.get(arr_index), r);
+                //System.out.println(newRegion.getAreaList() + "Area var" + varAttr.get(arr_index) + " region VarSum " +newRegion.getVarianceSum());
                 regionList.put(cId, newRegion);
                 labels[arr_index] = cId;
             }
@@ -226,7 +231,8 @@ public class EMP_breakdown{
                 tr.addArea(varArea, minAttr.get(varArea), maxAttr.get(varArea), avgAttr.get(varArea), varAttr.get(varArea), sumAttr.get(varArea), r);
                 boolean feasible = false;
                 boolean updated = true;
-                int worseSteps = 0;
+                int worseSteps = toleranceThreshold;
+                boolean roundWithNoUpdate = false;
                 while (!feasible && updated) {
 
                     updated = false;
@@ -1673,7 +1679,7 @@ public class EMP_breakdown{
         }
 
         while (updated) {
-            //checkLabels(labels, regionList);
+            checkLabels(labels, regionList);
             updated = false;
             List<Map.Entry<Integer, RegionWithVariance>> tmpList2 = new ArrayList<Map.Entry<Integer, RegionWithVariance>>(regionList.entrySet());
             if(randFlag[1] >= 1){
@@ -1686,6 +1692,10 @@ public class EMP_breakdown{
                     if(var_debug){
                         System.out.println("Region " + region.getId() + " under count or sum" );
                     }
+                    int worseTolerance = toleranceThreshold;
+                    List<Integer> tolerantAreas = new ArrayList<Integer>();
+                    List<Integer> tolerantRegions = new ArrayList<Integer>();
+                    boolean regionVarSatisfiable = true;
                     List<Integer> neighborList = new ArrayList<>(region.getAreaNeighborSet());
                     if(randFlag[1] <= 1){
                         if(var_debug){
@@ -1705,15 +1715,41 @@ public class EMP_breakdown{
                                     System.out.println("Area unassigned " + labels[area] );
                                 }*/
                             }
-                            if (labels[area] > 0 && regionList.get(labels[area]).removable(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r) && region.acceptable(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr)) {
+                            if (labels[area] > 0 && regionList.get(labels[area]).removable(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r) && region.acceptable(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr) ) {
                                 if(var_debug){
                                     System.out.println("Try to move area " + area + " from region " + labels[area] + " to " + region.getId());
                                 }
+                                if(!region.acceptable(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr))
+                                    worseTolerance--;
                                 regionList.get(labels[area]).removeArea(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r);
                                 region.addArea(area, minAttr.get(area), maxAttr.get(area), avgAttr.get(area), varAttr.get(area), sumAttr.get(area), r);
                                 labels[area] = region.getId();
                                 updated = true;
+                                regionVarSatisfiable = true;
                                 break;
+                            }else if(labels[area] > 0 && regionList.get(labels[area]).removable(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r) && (region.acceptable_withoutVar(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr) && worseTolerance > 0)){
+                                if(var_debug){
+                                    System.out.println("Tolerant: Try to move area " + area + " from region " + labels[area] + " to " + region.getId());
+                                }
+                                worseTolerance--;
+                                tolerantAreas.add(area);
+                                tolerantRegions.add(labels[area]);
+                                regionList.get(labels[area]).removeArea(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r);
+                                region.addArea(area, minAttr.get(area), maxAttr.get(area), avgAttr.get(area), varAttr.get(area), sumAttr.get(area), r);
+                                labels[area] = region.getId();
+                                regionVarSatisfiable = false;
+
+                                //updated = true;
+                            }
+                        }
+                        if(!regionVarSatisfiable){//Var still valiated within tolerance, reverse the area swap
+                            for(int i =  tolerantAreas.size() -1; i >= 0; i--){
+                                int area = tolerantAreas.get(i);
+                                if(var_debug)
+                                    System.out.println("Tolerance: move area " + area + " back to region " +  tolerantRegions.get(i));
+                                labels[area] = tolerantRegions.get(i);
+                                region.removeArea(area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r);
+                                regionList.get(tolerantRegions.get(i)).addArea(area, minAttr.get(area), maxAttr.get(area), avgAttr.get(area), varAttr.get(area), sumAttr.get(area), r);
                             }
                         }
                     }else{
@@ -1831,8 +1867,11 @@ public class EMP_breakdown{
                     if(randFlag[1] >= 1){
                         Collections.shuffle(neighborRegions);
                     }
-
-
+                    RegionWithVariance sourceRegion = regionList.get(region);
+                    double mergedVarSum = sourceRegion.getVarianceSum();
+                    double mergedVarSumSquare = sourceRegion.getVarianceSumSquare();
+                    int mergedCount = sourceRegion.getCount();
+                    int worseTolerant = toleranceThreshold;
                     for (Integer neighborRegion : neighborRegions) {
                         if(idMerged.contains(neighborRegion)){ //To prevent a merged region to be accessed again
                             continue;
@@ -1849,6 +1888,22 @@ public class EMP_breakdown{
                         if (sumUpperBound - regionList.get(neighborRegion).getSum() < newRegion.getSum() || countUpperBound - regionList.get(neighborRegion).getCount() < newRegion.getCount()) {
                             continue;
                         }
+                        RegionWithVariance nRegion = regionList.get(neighborRegion);
+                        mergedVarSum+= nRegion.getVarianceSum();
+                        mergedVarSumSquare += nRegion.getVarianceSumSquare();
+                        mergedCount += nRegion.getCount();
+                        double mergedVar = RegionWithVariance.simpleVariance(mergedCount, mergedVarSum, mergedVarSumSquare);
+                        if(worseTolerant > 0){
+                            if(!(mergedVar >= varLowerbound && mergedVar <= varUpprbound)){
+                                worseTolerant -= 1;
+                            }
+                        }else if(mergedVar >= varLowerbound && mergedVar <= varUpprbound){
+                            worseTolerant = toleranceThreshold;
+                        }else{
+                            continue;
+                        }
+
+
                         regionMerged.add(neighborRegion);
                         idMerged.add(neighborRegion);
                         if(var_debug)
@@ -1858,7 +1913,7 @@ public class EMP_breakdown{
                             System.exit(123);
                         }
                         newRegion = newRegion.mergeWith(regionList.get(neighborRegion), minAttr, maxAttr, avgAttr, varAttr, sumAttr, r);
-                        labels = newRegion.updateId(region, labels);
+                        //labels = newRegion.updateId(region, labels);
                         if(var_debug)
                             System.out.println("Sum after merge " + newRegion.getSum());
                         if (newRegion.satisfiable()) {
@@ -1867,6 +1922,8 @@ public class EMP_breakdown{
                         }
                     }
                     // Whether a feasible region will be merged and the new region is not feasible and needs to be removed?
+                    if(!(newRegion.getVariance() >= varLowerbound && newRegion.getVariance() <= varUpprbound))
+                        continue;
                     labels = newRegion.updateId(region, labels);
                     if (regionMerged.size() > 1)
                         updated = true;
@@ -2515,7 +2572,7 @@ public class EMP_breakdown{
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
         String timeStamp = df.format(t);
-        String folderName = "data/AlgorithmTesting/FaCT_" + mapName + "_MIN-" + minAttrLow + "-" + minAttrHigh + "_AVG-" + avgAttrLow + "-" + avgAttrHigh + "_SUM-" +sumAttrLow + "-" + sumAttrHigh + "-" + timeStamp;
+        String folderName = "data/AlgorithmTesting/FaCT_" + mapName + "_MIN-" + minAttrLow + "-" + minAttrHigh + "_AVG-" + avgAttrLow + "-" + avgAttrHigh + "_VAR-" + varAttrLow + "-" + varAttrHigh + "_SUM-" +sumAttrLow + "-" + sumAttrHigh + "-" + timeStamp;
         File folder = new File(folderName);
         folder.mkdirs();
         File settingFile = new File(folderName + "/Settings.csv");
@@ -2542,7 +2599,8 @@ public class EMP_breakdown{
         //RegionCollection rc = construction_phase_gene(population, income, 1, sg, idList,4000,Double.POSITIVE_INFINITY);
 
         String recordName = "data/emp_record/emp_" + mapName + "_" + minAttrName +  minAttrLow + "-" + minAttrHigh + "_" + maxAttrName +maxAttrLow + "-" + maxAttrHigh + "_"+ avgAttrName + avgAttrLow + "-" + avgAttrHigh + "_" +varAttrName + varAttrLow + "-" + varAttrHigh + "_" + sumAttrName +sumAttrLow + "-" + sumAttrHigh + "_" + countLow + "-" + countHigh;
-
+        varLowerbound = varAttrLow;
+        varUpprbound = varAttrHigh;
         for(int i = 0; i < numOfIts; i++){
             double constructionStart = System.currentTimeMillis() / 1000.0;
             RegionCollectionWithVariance rc = construction_phase_changeOfAttribute(idList, distAttr, sg,
@@ -2595,12 +2653,25 @@ public class EMP_breakdown{
                 System.out.println(rc.getRegionMap().keySet());
                 checkLabels_var(rc.getLabels(), rc.getRegionMap());
             }
-            //TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, varAttr, sumAttr, avgAttr);
-            //int[] labels = tr.labels;
+            System.out.println("Var 2343 " + varAttr.get(2343));
+
             //System.out.println(labels.length);
             //long WDSDifference = totalWDS - tr.WDS;
+            long WDSDifference;
+            long WDS;
+            int[] labels;
+            if(false){
+                labels = rc.getLabels();
+                WDSDifference = 0;
+                WDS = totalWDS;
+            }else{
+                TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, avgAttr, varAttr, sumAttr);
+                labels = tr.labels;
+                WDSDifference = totalWDS - tr.WDS;
+                WDS = tr.WDS;
+            }
             //int[] labels = SimulatedAnnealing.performSimulatedAnnealing(rc.getLabels(), rc.getRegionList(), sg, pdist((distAttr)), minAttr, maxAttr, sumAttr, avgAttr);
-            int[] labels = rc.getLabels();
+            //int[] labels = rc.getLabels();
             double endTime = System.currentTimeMillis()/ 1000.0;
             //System.out.println("MaxP: " + max_p);
             double heuristicDuration = endTime - constructionEnd;
@@ -2628,10 +2699,10 @@ public class EMP_breakdown{
             System.out.println("Construction time: " + constructionDuration);
             System.out.println("Tabu search time: " + heuristicDuration);
             System.out.println("Heterogeneity score before Tabu: "  + totalWDS);
-            System.out.println("Heterogeneity score after Tabu: " + totalWDS);
+            System.out.println("Heterogeneity score after Tabu: " + WDS);
             System.out.println("Number of unassigned areas: " + unassignedCount + "\n");
 
-            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + totalWDS + ", " + 0 + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
+            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + WDS + ", " + (WDS - totalWDS) + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
             csvWriter.flush();
             minTime = 0;
             avgTime = 0;
@@ -2728,7 +2799,8 @@ public class EMP_breakdown{
 
                                                                                     Double countLowerBound,
                                                                                     Double countUpperBound, boolean repeatQuery, String recordName) {
-        int maxIt = 3;
+
+        int maxIt = 1;
         RegionWithVariance.setRange(minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, varLowerBound, varUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound);
 
 
@@ -3107,6 +3179,7 @@ public class EMP_breakdown{
                 System.out.println("-------------");
 
             }
+            //checkLabels_var(labels, regionList);
             /*if (var_debug) {
                 for (Map.Entry<Integer, RegionWithVariance> regionEntry : regionList.entrySet()) {
                     // if (!regionEntry.getValue().satisfiable()) {

@@ -248,6 +248,43 @@ public class RegionWithVariance implements Serializable {
         }
         return false;
     }
+    public boolean acceptable_withoutVar(Integer area, ArrayList<Long> minAttr, ArrayList <Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> varAttr, ArrayList<Long> sumAttr){
+        if(this.numOfAreas + 1 <= countUpperBound){
+            if(this.sum + sumAttr.get(area) <= sumUpperBound){
+                if((minAttr.get(area) < this.min && minAttr.get(area) <= minUpperBound && minAttr.get(area) >= minLowerBound) ||
+                        minAttr.get(area) >= this.min){
+                    if((maxAttr.get(area) > this.max && maxAttr.get(area) <= maxUpperBound && maxAttr.get(area) >= maxLowerBound) ||
+                            maxAttr.get(area) <= this.max){
+                        double tmpAvg = (this.numOfAreas * this.average + avgAttr.get(area)) / (this.numOfAreas + 1);
+                        if(tmpAvg >= avgLowerBound && tmpAvg <= avgUpperBound){
+                            return true;
+                        }else{
+                            if(debug){
+                                System.out.println("Adding area " +area + " to region " + this.id + " exceeds one of the avg");
+                            }
+                        }
+                    }else{
+                        if(debug){
+                            System.out.println("Adding area " +area + " to region " + this.id + " exceeds one of the max");
+                        }
+                    }
+                }else{
+                    if(debug){
+                        System.out.println("Adding area " +area + " to region " + this.id + " exceeds one of the Min");
+                    }
+                }
+            }else{
+                if(debug){
+                    System.out.println("Adding area " +area + " to region " + this.id + " exceeds the sumUpperBound");
+                }
+            }
+        }else{
+            if(debug){
+                System.out.println("Adding area " +area + " to region " + this.id + " exceeds the countUpperBound");
+            }
+        }
+        return false;
+    }
 
     public boolean removable(Integer area, ArrayList<Long> minAttr, ArrayList <Long> maxAttr, ArrayList<Long> avgAttr, ArrayList<Long> varAttr, ArrayList<Long> sumAttr, SpatialGrid sg){
         if(!areaList.contains(area)){
@@ -260,9 +297,18 @@ public class RegionWithVariance implements Serializable {
                 ((this.average * numOfAreas - avgAttr.get(area)) / (numOfAreas - 1) <= RegionWithVariance.avgUpperBound)){
             double tmpVarSum = varianceSum - varAttr.get(area);
             double tmpVarSumSquare = varianceSumSquare - varAttr.get(area) * varAttr.get(area);
-            double tmpVar = tmpVarSumSquare / (this.getCount() - 1.0) - Math.pow(tmpVarSum, 2) / Math.pow(this.getCount() - 1, 2);
-            if(!(tmpVar >= varLowerBound && tmpVar <= varUpperBound))
+            double tmpVar = simpleVariance(this.getCount() - 1, tmpVarSum, tmpVarSumSquare);
+            if(!(tmpVar >= varLowerBound && tmpVar <= varUpperBound)){
+                if(false){
+                    System.out.println(varAttr.get(area));
+                    System.out.println("Variance not satisfied: " + this.getAreaList() +" " + this.getVariance() + " " + this.getVarianceSum() + " " + this.getVarianceSumSquare() +" "+varAttr.get(area)+" "  + tmpVar);
+                    System.out.println("Tmpiance not satisfied: " + this.getAreaList() +" " + tmpVar+ " " + tmpVarSum + " " + tmpVarSumSquare +" "+varAttr.get(area)+" "  + tmpVar);
+
+                }
+
                 return false;
+            }
+
 
             if(this.min == minAttr.get(area) || this.max == maxAttr.get(area)){
                 Double tmpMin = Double.POSITIVE_INFINITY;
