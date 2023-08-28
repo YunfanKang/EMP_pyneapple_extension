@@ -10,7 +10,7 @@ public class EMP_breakdown_experiments {
         //repeatScalabilityTestGeneral("data/20K/20K.shp", true);
         //repeatScalabilityTestGeneral("data/30K/30K.shp", true);
        // repeatScalabilityTestGeneral("data/40K/30K.shp", true);
-        repeatScalabilityTestGeneral("data/20K_sum/20K.shp", true);
+        //repeatScalabilityTestGeneral("data/20K_sum/20K.shp", true);
         //repeatScalabilityTestGeneral("data/50K/50K.shp", true);
         //testEMPLarge();
 
