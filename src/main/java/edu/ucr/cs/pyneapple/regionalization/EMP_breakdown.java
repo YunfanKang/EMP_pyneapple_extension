@@ -23,14 +23,16 @@ import java.util.*;
 //public class EMP_breakdown implements RegionalizationMethod {
 public class EMP_breakdown{
     static boolean debug = false;
-    static boolean repeat_debug = true;
+    static boolean repeat_debug = false;
     static boolean var_debug = false;
     static boolean check_p_afterAVG = false;
     static boolean labelCheck = false;
+    static boolean varForSum = false;
+
 
     static double varLowerbound, varUpprbound;
 
-    static int toleranceThreshold =10;
+    static int toleranceThreshold =100;
     static int numOfIts = 1;
     static int randFlag[] = {1,1};
     static int rand[] = {0, 1, 2};
@@ -306,7 +308,7 @@ public class EMP_breakdown{
                                     updated = true;
 
 
-                                }else if(worseSteps > 0){
+                                }else if(roundWithNoUpdate && worseSteps > 0){
                                     if(var_debug){
                                         double oldVariance = tr.getVariance();
                                         System.out.println("Region below varLowerBound: Worse - lower, Variance changes from " + oldVariance + " to " + newVariance + " compare to lower bound: " +  (newVariance > varLowerBound));
@@ -315,6 +317,7 @@ public class EMP_breakdown{
                                     tr.addArea(i, minAttr.get(i), maxAttr.get(i), avgAttr.get(i), varAttr.get(i), sumAttr.get(i), r);
                                     removedVar.add(i);
                                     updated = true;
+                                    roundWithNoUpdate = false;
                                 }
 
                             }
@@ -337,7 +340,7 @@ public class EMP_breakdown{
                                     tr.addArea(i, minAttr.get(i), maxAttr.get(i), avgAttr.get(i), varAttr.get(i), sumAttr.get(i), r);
                                     removedVar.add(i);
                                     updated = true;
-                                }else if(worseSteps > 0){
+                                }else if(roundWithNoUpdate && worseSteps > 0){
                                     if(var_debug){
                                         double oldVariance = tr.getVariance();
                                         System.out.println("Region above varUpperBound: Worse - higher Variance changes from " + oldVariance + " to " + newVariance + " compare to upper bound: " +  (newVariance < varUpperBound));
@@ -346,6 +349,7 @@ public class EMP_breakdown{
                                     tr.addArea(i, minAttr.get(i), maxAttr.get(i), avgAttr.get(i), varAttr.get(i), sumAttr.get(i), r);
                                     removedVar.add(i);
                                     updated = true;
+                                    roundWithNoUpdate = false;
                                 }
 
                             }
@@ -357,7 +361,10 @@ public class EMP_breakdown{
                         labels = tr.updateId(regionList.size() + 1, labels);
                         regionList.put(regionList.size() + 1, tr);
                     }
-
+                    if(!updated && !roundWithNoUpdate){
+                        roundWithNoUpdate = true;
+                        updated = true;
+                    }
 
                 }
                 if (!feasible) {
@@ -1679,7 +1686,7 @@ public class EMP_breakdown{
         }
 
         while (updated) {
-            checkLabels(labels, regionList);
+            //checkLabels(labels, regionList);
             updated = false;
             List<Map.Entry<Integer, RegionWithVariance>> tmpList2 = new ArrayList<Map.Entry<Integer, RegionWithVariance>>(regionList.entrySet());
             if(randFlag[1] >= 1){
@@ -1922,8 +1929,11 @@ public class EMP_breakdown{
                         }
                     }
                     // Whether a feasible region will be merged and the new region is not feasible and needs to be removed?
-                    if(!(newRegion.getVariance() >= varLowerbound && newRegion.getVariance() <= varUpprbound))
+                    if(!(newRegion.getVariance() >= varLowerbound && newRegion.getVariance() <= varUpprbound)){
+                        idMerged.removeAll(regionMerged);
                         continue;
+                    }
+
                     labels = newRegion.updateId(region, labels);
                     if (regionMerged.size() > 1)
                         updated = true;
@@ -2022,6 +2032,12 @@ public class EMP_breakdown{
             System.out.println("P returned before removal: " + regionList.size());
         }
 
+        if(varForSum){
+            System.out.println("IdToBeRemoved: " + idToBeRemoved);
+            System.out.println("IdMerged: " + idMerged);
+            System.out.println("P returned before removal: " + regionList.size());
+        }
+
         for (Integer id : idToBeRemoved) {
             if (!idMerged.contains(id) && !regionList.get(id).satisfiable()) {
                 regionList.get(id).updateId(-3, labels);
@@ -2034,7 +2050,21 @@ public class EMP_breakdown{
             System.out.println("P returned after removal: " + regionList.size());
             System.out.println("-------------------------------------------------------------------------------");
         }
+        if(varForSum){
+            boolean satisfySum = true;
+            int notSumCount = 0;
+            for(Map.Entry<Integer, RegionWithVariance> e: regionList.entrySet()){
+
+                if(e.getValue().getSum() < sumLowerBound){
+                    notSumCount += 1;
+                    System.out.println("Region " + e.getKey() + " " + (e.getValue().getSum()));
+                    satisfySum = false;
+                }
+            }
+            System.out.println("Sum low check for " + regionList.size() + " regions: " + satisfySum + " " + notSumCount);
+        }
         Pair<int[], Map<Integer, RegionWithVariance>> sumcount_result = new Pair<>(labels, regionList);
+
         return  sumcount_result;
     }
 
@@ -2799,7 +2829,7 @@ public class EMP_breakdown{
 
                                                                                     Double countLowerBound,
                                                                                     Double countUpperBound, boolean repeatQuery, String recordName) {
-        int maxIt = 1;
+        int maxIt = 100;
         RegionWithVariance.setRange(minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, varLowerBound, varUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound);
 
 
