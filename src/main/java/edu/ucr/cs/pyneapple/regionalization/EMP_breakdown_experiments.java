@@ -24,11 +24,11 @@ public class EMP_breakdown_experiments {
                 "employed",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
-                "households",
-                1000.0,
-                20000.0,
-                "pop2010",
+                "employed",
                 -Double.POSITIVE_INFINITY,
+                400000.0,
+                "pop2010",
+                20000.0,
                 Double.POSITIVE_INFINITY,
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -41,11 +41,18 @@ public class EMP_breakdown_experiments {
     static void varRangeTest() throws Exception{
         String normalDataset = "data/LACounty/La_county_noisland.shp";
         System.out.println("Var -inf - 10000");
-        Double[] varLow = {0.0, 5000.0, 10000.0, 15000.0, 0.0, 2500.0, 5000.0, 7500.0};
-        Double[] varHigh = {10000.0, 15000.0, 20000.0, 25000.0, 20000.0, 17500.0, 15000.0, 12500.0};
+        //Double[] varLow = {0.0, 5000.0, 10000.0, 15000.0, 0.0, 2500.0, 5000.0, 7500.0};
+        //Double[] varHigh = {10000.0, 15000.0, 20000.0, 25000.0, 20000.0, 17500.0, 15000.0, 12500.0};
+        //Double[] varLow = {0.0, 0.0, 0.0,0.0, 100000.0, 200000.0, 300000.0, 400000.0, 200000.0, 250000.0, 300000.0, 200000.0, 300000.0, 400000.0};
+        //Double[] varHigh = { 200000.0, 300000.0, 400000.0, 500000.0, Double.POSITIVE_INFINITY,  Double.POSITIVE_INFINITY,  Double.POSITIVE_INFINITY,  Double.POSITIVE_INFINITY, 500000.0, 450000.0, 400000.0, 300000.0, 400000.0, 500000.0};
+        //Double[] varLow = {0.0, 0.0, 0.0,0.0, 300000.0, 400000.0, 500000.0, 600000.0, 400000.0, 350000.0, 300000.0, 400000.0, 500000.0, 600000.0};
+        //Double[] varHigh = { 400000.0, 500000.0, 600000.0, 700000.0, Double.POSITIVE_INFINITY,  Double.POSITIVE_INFINITY,  Double.POSITIVE_INFINITY,  Double.POSITIVE_INFINITY, 700000.0, 750000.0, 800000.0, 500000.0, 600000.0, 700000.0};
+        Double[] varLow = {450000.0, 500000.0};
+        Double[] varHigh = {650000.0, 600000.0};
+
         for(int i = 0; i < varLow.length; i++){
             System.out.println("Var " + varLow[i] + " " + varHigh[i]);
-            EMP_breakdown.set_input_minmax_var(normalDataset,
+            /*EMP_breakdown.set_input_minmax_var(normalDataset,
                     "pop_16up",
                     -Double.POSITIVE_INFINITY,
                     Double.POSITIVE_INFINITY,
@@ -56,6 +63,28 @@ public class EMP_breakdown_experiments {
                     -Double.POSITIVE_INFINITY,
                     Double.POSITIVE_INFINITY,
                     "households",
+                    varLow[i],
+                    varHigh[i],
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households",
+                    false
+
+            );*/
+            EMP_breakdown.set_input_minmax_var(normalDataset,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
                     varLow[i],
                     varHigh[i],
                     "pop2010",
