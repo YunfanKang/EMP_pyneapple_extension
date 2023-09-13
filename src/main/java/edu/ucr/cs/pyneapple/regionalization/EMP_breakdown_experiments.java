@@ -26,7 +26,7 @@ public class EMP_breakdown_experiments {
                 Double.POSITIVE_INFINITY,
                 "employed",
                 -Double.POSITIVE_INFINITY,
-                400000.0,
+                Double.POSITIVE_INFINITY,
                 "pop2010",
                 20000.0,
                 Double.POSITIVE_INFINITY,

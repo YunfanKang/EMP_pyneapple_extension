@@ -30,6 +30,7 @@ public class EMP_breakdown{
     static boolean check_p_afterAVG = false;
     static boolean labelCheck = false;
     static boolean varForSum = false;
+    static int reconstructedAreas = 0;
 
 
     static double varLowerbound, varUpprbound;
@@ -2654,6 +2655,14 @@ public class EMP_breakdown{
                     sumAttrLow,
                     sumAttrHigh,
                     countLow, countHigh, repeatQuery, recordName);
+            int[] labelsCons = rc.getLabels();
+            int unassingedConstruct = 0;
+            for(int k = 0; k < labelsCons.length; k++){
+                if(labelsCons[k] < 1){
+                    unassingedConstruct += 1;
+                }
+            }
+            System.out.println("Unassigned after construction: " + unassingedConstruct);
             double constructionEnd = System.currentTimeMillis() / 1000.0;
             double constructionDuration = constructionEnd - constructionStart;
             //System.out.println("Time for construction phase:\n" + (constructionTime - rookendTime));
@@ -2828,8 +2837,10 @@ public class EMP_breakdown{
                                                                                     Double sumUpperBound,
 
                                                                                     Double countLowerBound,
+                                                                                    Double countUpperBound, boolean repeatQuery, String recordName)
+    {
 
-        int maxIt = 100;3
+        int maxIt = 1;
         RegionWithVariance.setRange(minLowerBound, minUpperBound, maxLowerBound, maxUpperBound, avgLowerBound, avgUpperBound, varLowerBound, varUpperBound, sumLowerBound, sumUpperBound, countLowerBound, countUpperBound);
 
 
@@ -3338,7 +3349,7 @@ public class EMP_breakdown{
         return bestCollection;
     }
 
-    public static void localReconstruction (int[] areaChanged,
+    public static RegionCollectionWithVariance localReconstruction (int[] areaChanged,
                                             ArrayList<Integer> idList,
                                             RegionCollectionWithVariance rc,
                                             SpatialGrid r,
@@ -3364,10 +3375,16 @@ public class EMP_breakdown{
                                             Double sumUpperBound,
 
                                             Double countLowerBound,
-                                            Double countUpperBound, boolean repeatQuery, String recordName){
+                                            Double countUpperBound, boolean repeatQuery, String recordName,
+                                            boolean greedy){
         //System.out.println("Enter local reconstruct");
+
         Set<Integer> affectedRegions = new HashSet<Integer>();
-        int[] labels = rc.getLabels();
+        int[] labels = rc.getLabels().clone();
+        if(localrec_debug){
+            System.out.println("    Area affected: " + areaChanged[0] + " belongs to region " + labels[areaChanged[0]]);
+        }
+        //
         for(int i = 0; i < areaChanged.length; i++){
             affectedRegions.add(labels[areaChanged[i]]);
         }
@@ -3399,10 +3416,15 @@ public class EMP_breakdown{
             for(Integer dr: deconstructRegions){
                 deconstructAreas.addAll(regionMap.get(dr).getAreaList());
             }
-            if(localrec_debug)
-                System.out.println("Affected areas " + deconstructAreas);
+            if(localrec_debug) {
 
-            rc = construction_phase_LocalReconstruct(idList, distAttr, r,
+                System.out.println();
+                System.out.println("Affected areas " + deconstructAreas);
+                System.out.println("No of affected areas " + deconstructAreas.size());
+                System.out.println();
+            }
+            reconstructedAreas += deconstructAreas.size();
+            RegionCollectionWithVariance nrc = construction_phase_LocalReconstruct(idList, distAttr, r,
                     minAttr,
                     minLowerBound,
                     minUpperBound,
@@ -3423,13 +3445,59 @@ public class EMP_breakdown{
                     sumLowerBound,
                     sumUpperBound,
                     countLowerBound, countUpperBound, false, deconstructAreas, recordName);
-            System.out.println("Region deconstructed " + deconstructRegions.size() + " " + deconstructRegions);
-            System.out.println("Region reconstructed " + rc.getMax_p() + " " + rc.getRegionMap().keySet());
+            int noOfDec = deconstructRegions.size();
+            int noOfRec = nrc.getMax_p();
+            System.out.println("Region deconstructed " + noOfDec + " " + deconstructRegions);
+            System.out.println("Region reconstructed " + noOfRec + " " + nrc.getRegionMap().keySet());
+            if(greedy){
+                if(noOfDec > noOfRec){
+                    return rc;
+                }
+            }
             //System.out.println("Area 1 check " +rc.getLabels()[0]);
             for(Integer area: deconstructAreas){
-                System.out.print(rc.getLabels()[area] + " ");
+                System.out.print(nrc.getLabels()[area] + " ");
             }
             System.out.println();
+            if(localrec_debug){
+                System.out.println("Check region feasibility afte deconstruction");
+                for (Map.Entry<Integer, RegionWithVariance> regionEntry : nrc.getRegionMap().entrySet()) {
+                    if (!regionEntry.getValue().satisfiable()) {
+                        System.out.println("Region " + regionEntry.getKey() + " not satisfiable");
+                    }
+                }
+
+                int newUnassigned = 0;
+                for(int i : deconstructAreas){
+                    if(nrc.getLabels()[i] < 1){
+                        newUnassigned += 1;
+                    }
+                }
+                System.out.println("No of new unassigned areas: " + newUnassigned);
+
+            }
+            Map<Integer, RegionWithVariance> oldRegionMap = new HashMap<>();
+            oldRegionMap.putAll(rc.getRegionMap());
+            int[] oldLabels = rc.getLabels().clone();
+            for(Integer deconstructedRegion: deconstructRegions){
+                oldRegionMap.remove(deconstructedRegion);
+            }
+            Map<Integer, RegionWithVariance> recRegionMap = nrc.getRegionMap();
+            int largestId = 0;
+            for(Integer i: regionMap.keySet()){
+                if(i > largestId){
+                    largestId = i;
+                }
+            }
+            for (Map.Entry<Integer, RegionWithVariance> regionEntry :recRegionMap.entrySet()) {
+                if (regionEntry.getValue().satisfiable()) {
+                    regionEntry.getValue().updateId(regionEntry.getKey() + largestId, oldLabels);
+                    oldRegionMap.put(regionEntry.getKey() + largestId, regionEntry.getValue());
+                }
+            }
+            //checkLabels_var(oldLabels, oldRegionMap);
+            checkLabels_var(oldLabels, oldRegionMap);
+            return new RegionCollectionWithVariance(oldRegionMap.keySet().size(), oldLabels, oldRegionMap);
             /*ArrayList<Long> localMin = new ArrayList<>();
             ArrayList<Long> localMax = new ArrayList<>();
             ArrayList<Long> localAvg = new ArrayList<>();
@@ -3443,18 +3511,110 @@ public class EMP_breakdown{
                 System.out.println("Affected regions is NOT within one hop");
                 System.out.println(affectedRegions);
             }
+            Set<Integer> deconstructRegions = new HashSet<>();
+            for(Integer rwr: affectedRegions){
+                RegionWithVariance rv = regionMap.get(rwr);
+                Set<Integer> neighborRegions = rv.getRegionNeighborSet(labels);
+                deconstructRegions.add(rwr);
+                deconstructRegions.addAll(neighborRegions);
+            }
+            System.out.println(deconstructRegions.toString());
+            Set<Integer> deconstructAreas = new HashSet<Integer>();
+            for(Integer dr: deconstructRegions){
+                deconstructAreas.addAll(regionMap.get(dr).getAreaList());
+            }
+            if(localrec_debug){
+                System.out.println();
+                System.out.println("Affected areas " + deconstructAreas);
+                System.out.println("No of affected areas " + deconstructAreas.size());
+                System.out.println();
+            }
 
+            reconstructedAreas += deconstructAreas.size();
+            RegionCollectionWithVariance nrc = construction_phase_LocalReconstruct(idList, distAttr, r,
+                    minAttr,
+                    minLowerBound,
+                    minUpperBound,
 
+                    maxAttr,
+                    maxLowerBound,
+                    maxUpperBound,
+
+                    avgAttr,
+                    avgLowerBound,
+                    avgUpperBound,
+
+                    varAttr,
+                    varLowerBound,
+                    varUpperBound,
+
+                    sumAttr,
+                    sumLowerBound,
+                    sumUpperBound,
+                    countLowerBound, countUpperBound, false, deconstructAreas, recordName);
+            int noOfDec = deconstructRegions.size();
+            int noOfRec = nrc.getMax_p();
+            System.out.println("Region deconstructed " + noOfDec + " " + deconstructRegions);
+            System.out.println("Region reconstructed " + noOfRec + " " + nrc.getRegionMap().keySet());
+            if(greedy){
+                if(noOfDec > noOfRec){
+                    return rc;
+                }
+            }
+            //System.out.println("Area 1 check " +rc.getLabels()[0]);
+            for(Integer area: deconstructAreas){
+                System.out.print(nrc.getLabels()[area] + " ");
+            }
+            System.out.println();
+            if(localrec_debug){
+                System.out.println("Check region feasibility afte deconstruction");
+                for (Map.Entry<Integer, RegionWithVariance> regionEntry : nrc.getRegionMap().entrySet()) {
+                    if (!regionEntry.getValue().satisfiable()) {
+                        System.out.println("Region " + regionEntry.getKey() + " not satisfiable");
+                    }
+                }
+
+                int newUnassigned = 0;
+                for(int i : deconstructAreas){
+                    if(nrc.getLabels()[i] < 1){
+                        newUnassigned += 1;
+                    }
+                }
+                System.out.println("No of new unassigned areas: " + newUnassigned);
+
+            }
+            Map<Integer, RegionWithVariance> oldRegionMap = new HashMap<>();
+            oldRegionMap.putAll(rc.getRegionMap());
+            int[] oldLabels = rc.getLabels().clone();
+            for(Integer deconstructedRegion: deconstructRegions){
+                oldRegionMap.remove(deconstructedRegion);
+            }
+            Map<Integer, RegionWithVariance> recRegionMap = nrc.getRegionMap();
+            int largestId = 0;
+            for(Integer i: regionMap.keySet()){
+                if(i > largestId){
+                    largestId = i;
+                }
+            }
+            for (Map.Entry<Integer, RegionWithVariance> regionEntry :recRegionMap.entrySet()) {
+                if (regionEntry.getValue().satisfiable()) {
+                    regionEntry.getValue().updateId(regionEntry.getKey() + largestId, oldLabels);
+                    oldRegionMap.put(regionEntry.getKey() + largestId, regionEntry.getValue());
+                }
+            }
+            //checkLabels_var(oldLabels, oldRegionMap);
+            return new RegionCollectionWithVariance(oldRegionMap.keySet().size(), oldLabels, oldRegionMap);
         }
+
+
 
 
     }
 
     public static void main(String args[]) throws Exception {
         //String normalDataset = "data/LACounty/La_county_noisland.shp";
-        String normalDataset = "data/LACity/LACity.shp";
-
-        set_input_localReconstruct(normalDataset,
+        String normalDataset = "data/LACounty/La_county_noisland.shp";
+        /*set_input_minmax_var(normalDataset,
                 "pop_16up",
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
@@ -3473,9 +3633,59 @@ public class EMP_breakdown{
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
+                false);*/
+        /*System.out.println("Local reconstruct");
+        System.out.println();
+        set_input_localReconstruct(normalDataset,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                3000.0,
+                "unemployed",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "employed",
+                1500.0,
+                3500.0,
+                "households",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "pop2010",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
                 false
 
-        );
+        );*/
+
+        System.out.println("Iterated greedy");
+        System.out.println();
+        set_input_IteratedGreedy(normalDataset,
+                "pop_16up",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "unemployed",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "employed",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "pop2010",
+                20000.0,
+                Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY,
+                "households",
+                false,
+                1,
+                100);
+
+
+        System.out.println("No of areas reconstructed: " + reconstructedAreas);
 
     }
 
@@ -3671,7 +3881,8 @@ public class EMP_breakdown{
         //RegionCollection rc = construction_phase_gene(population, income, 1, sg, idList,4000,Double.POSITIVE_INFINITY);
 
         String recordName = "data/emp_record/emp_" + mapName + "_" + minAttrName +  minAttrLow + "-" + minAttrHigh + "_" + maxAttrName +maxAttrLow + "-" + maxAttrHigh + "_"+ avgAttrName + avgAttrLow + "-" + avgAttrHigh + "_" +varAttrName + varAttrLow + "-" + varAttrHigh + "_" + sumAttrName +sumAttrLow + "-" + sumAttrHigh + "_" + countLow + "-" + countHigh;
-
+        varLowerbound = varAttrLow;
+        varUpprbound = varAttrHigh;
         for(int i = 0; i < numOfIts; i++){
             double constructionStart = System.currentTimeMillis() / 1000.0;
             RegionCollectionWithVariance rc = construction_phase_changeOfAttribute(idList, distAttr, sg,
@@ -3695,42 +3906,62 @@ public class EMP_breakdown{
                     sumAttrLow,
                     sumAttrHigh,
                     countLow, countHigh, repeatQuery, recordName);
+            int[] labelsCons = rc.getLabels();
+            int unassingedConstruct = 0;
+            for(int k = 0; k < labelsCons.length; k++){
+                if(labelsCons[k] < 1){
+                    unassingedConstruct += 1;
+                }
+            }
+            System.out.println("Unassigned after construction: " + unassingedConstruct);
             double constructionEnd = System.currentTimeMillis() / 1000.0;
             double constructionDuration = constructionEnd - constructionStart;
-            localReconstruction(new int[]{301},
-                    //rc.getLabels(),
-                    idList,
-                    rc,
-                    sg,
-                    distAttr,
-                    minAttr,
-                    minAttrLow,
-                    minAttrHigh,
-
-                    maxAttr,
-                    maxAttrLow,
-                    maxAttrHigh,
-
-                    avgAttr,
-                    avgAttrLow,
-                    avgAttrHigh,
-
-                    varAttr,
-                    varAttrLow,
-                    varAttrHigh,
-
-                    sumAttr,
-                    sumAttrLow,
-                    sumAttrHigh,
-                    countLow, countHigh,
-                    true,
-                    "localReconstruct"
-                    );
-            //System.out.println("Time for construction phase:\n" + (constructionTime - rookendTime));
-            double reConstructionEnd = System.currentTimeMillis() / 1000.0;
-            double reConstructDuration = reConstructionEnd - constructionEnd;
             System.out.println("Construction time: " + constructionDuration);
-            System.out.println("Re-Construction time: " + reConstructDuration);
+            int totalReconstruct = 10;
+            ArrayList<Integer> deconAreas = new ArrayList<>();
+            for(int k = 0; k < totalReconstruct; k++){
+                int areaDec = minAttr.size() / totalReconstruct * k;
+                deconAreas.add(areaDec);
+                //sumAttr.set(areaDec, 0L);
+                double reConstructionStart = System.currentTimeMillis() / 1000.0;
+                localReconstruction((int[])deconAreas.stream().mapToInt(j -> j).toArray(),
+                        //rc.getLabels(),
+                        idList,
+                        rc,
+                        sg,
+                        distAttr,
+                        minAttr,
+                        minAttrLow,
+                        minAttrHigh,
+
+                        maxAttr,
+                        maxAttrLow,
+                        maxAttrHigh,
+
+                        avgAttr,
+                        avgAttrLow,
+                        avgAttrHigh,
+
+                        varAttr,
+                        varAttrLow,
+                        varAttrHigh,
+
+                        sumAttr,
+                        sumAttrLow,
+                        sumAttrHigh,
+                        countLow, countHigh,
+                        true,
+                        "localReconstruct", false
+                );
+                double reConstructionEnd = System.currentTimeMillis() / 1000.0;
+                double reConstructDuration   = reConstructionEnd - reConstructionStart;
+                //System.out.println("Construction time: " + constructionDuration);
+                System.out.println("Re-Construction time: " + reConstructDuration);
+            }
+
+
+            //System.out.println("Time for construction phase:\n" + (constructionTime - rookendTime));
+
             int max_p = rc.getMax_p();
             //System.out.println("MaxP: " + max_p);
             //Map<Integer, Integer> regionSpatialAttr = rc.getRegionSpatialAttr();
@@ -3901,8 +4132,8 @@ public class EMP_breakdown{
             }
         }
 
-        //if(var_debug)
-        System.out.println("Different constraint check: " + differentConstraint + " " + stateOfChange);
+        if(var_debug)
+            System.out.println("Different constraint check: " + differentConstraint + " " + stateOfChange);
 
         ObjectOutputStream oos = null;
         if(repeatQuery && !differentConstraint){
@@ -4017,7 +4248,8 @@ public class EMP_breakdown{
         if(!(avgLowerBound.equals(-Double.POSITIVE_INFINITY) && avgUpperBound.equals(Double.POSITIVE_INFINITY))){
             hasAvg = true;
         }
-        System.out.println("Has var: " + hasVar + " has avg " + hasAvg);
+        if(var_debug)
+            System.out.println("Has var: " + hasVar + " has avg " + hasAvg);
         if(hasVar && hasAvg){
             System.out.println("Please do not specify the variance and the average constraint at the same time");
             System.exit(12138);
@@ -4269,6 +4501,367 @@ public class EMP_breakdown{
             e.printStackTrace();
         }
         return bestCollection;
+    }
+    public static void  set_input_IteratedGreedy(String fileName,
+                                                   String minAttrName,
+                                                   Double minAttrLow,
+                                                   Double minAttrHigh,
+                                                   String maxAttrName,
+                                                   Double maxAttrLow,
+                                                   Double maxAttrHigh,
+                                                   String avgAttrName,
+                                                   Double avgAttrLow,
+                                                   Double avgAttrHigh,
+                                                   String varAttrName,
+                                                   Double varAttrLow,
+                                                   Double varAttrHigh,
+                                                   String sumAttrName,
+                                                   Double sumAttrLow,
+                                                   Double sumAttrHigh,
+                                                   Double countLow,
+                                                   Double countHigh,
+                                                   String distAttrName,
+                                                   boolean repeatQuery,
+                                                 int deconStrength,
+                                                 int deconItrs
+
+    ) throws Exception {
+        double startTime = System.currentTimeMillis()/ 1000.0;
+        File file = new File(fileName);
+        Map<String, Object> map = new HashMap<>();
+        map.put("url", file.toURI().toURL());
+
+        DataStore dataStore = DataStoreFinder.getDataStore(map);
+        String typeName = dataStore.getTypeNames()[0];
+
+        FeatureSource<SimpleFeatureType, SimpleFeature> source =
+                dataStore.getFeatureSource(typeName);
+        Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
+        ArrayList<Long> minAttr = new ArrayList<>();
+        ArrayList<Long> maxAttr = new ArrayList<>();
+        ArrayList<Long> avgAttr = new ArrayList<>();
+        ArrayList<Long> varAttr = new ArrayList<>();
+        ArrayList<Long> sumAttr = new ArrayList<>();
+        ArrayList<Long> distAttr = new ArrayList<>();
+
+        ArrayList<SimpleFeature> fList = new ArrayList<>();
+        ArrayList<Integer> idList = new ArrayList<>();
+        FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
+        double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY;
+        double maxX = - Double.POSITIVE_INFINITY, maxY = -Double.POSITIVE_INFINITY;
+        Double minAttrMin = Double.POSITIVE_INFINITY;
+        Double minAttrMax = -Double.POSITIVE_INFINITY;
+        Double maxAttrMax = -Double.POSITIVE_INFINITY;
+        Double maxAttrMin = Double.POSITIVE_INFINITY;
+        double sumMin = Double.POSITIVE_INFINITY;
+        int count = 0;
+        Double avgTotal = 0.0;
+        Double sumTotal = 0.0;
+        ArrayList<Geometry> geometryList = new ArrayList<>();
+        try (FeatureIterator<SimpleFeature> features = collection.features()) {
+            while (features.hasNext()) {
+                SimpleFeature feature = features.next();
+                //System.out.print(feature.getID());
+                //System.out.print(": ");
+
+                minAttr.add(Long.parseLong(feature.getAttribute(minAttrName).toString()));
+                maxAttr.add(Long.parseLong(feature.getAttribute(maxAttrName).toString()));
+                avgAttr.add(Long.parseLong(feature.getAttribute(avgAttrName).toString()));
+                varAttr.add(Long.parseLong(feature.getAttribute(varAttrName).toString()));
+                sumAttr.add(Long.parseLong(feature.getAttribute(sumAttrName).toString()));
+                distAttr.add(Long.parseLong(feature.getAttribute(distAttrName).toString()));
+                fList.add(feature);
+                if (Long.parseLong(feature.getAttribute(sumAttrName).toString()) < sumMin){
+                    sumMin = Long.parseLong(feature.getAttribute(sumAttrName).toString());
+                }
+                if (Long.parseLong(feature.getAttribute(avgAttrName).toString()) < 0){
+                    System.out.println("AVG attribute contains negative value(s)");
+                    return;
+                }
+                if (Long.parseLong(feature.getAttribute(sumAttrName).toString()) < 0){
+                    System.out.println("SUM attribute contains negative value(s)");
+                    return;
+                }
+                if (Long.parseLong(feature.getAttribute(minAttrName).toString()) < minAttrMin){
+                    minAttrMin = Double.parseDouble(feature.getAttribute(minAttrName).toString());
+                }
+                if (Long.parseLong(feature.getAttribute(minAttrName).toString()) > minAttrMax){
+                    minAttrMax = Double.parseDouble(feature.getAttribute(minAttrName).toString());
+                }
+                if(Long.parseLong(feature.getAttribute(maxAttrName).toString()) > maxAttrMax){
+                    maxAttrMax = Double.parseDouble(feature.getAttribute(maxAttrName).toString());
+                }
+                if(Long.parseLong(feature.getAttribute(maxAttrName).toString()) < maxAttrMin){
+                    maxAttrMin = Double.parseDouble(feature.getAttribute(maxAttrName).toString());
+                }
+                count ++;
+                avgTotal += Double.parseDouble(feature.getAttribute(avgAttrName).toString());
+                sumTotal += Double.parseDouble(feature.getAttribute(sumAttrName).toString());
+                //System.out.println(feature.getID());
+                idList.add(Integer.parseInt(feature.getID().split("\\.")[1]) - 1);
+                //System.out.print(feature.getID());
+                //System.out.print(": ");
+                //fList.add(feature);
+                Geometry geometry = (Geometry) feature.getDefaultGeometry();
+                geometryList.add(geometry);
+                double cminx = geometry.getEnvelope().getCoordinates()[0].getX();
+                double cminy = geometry.getEnvelope().getCoordinates()[0].getY();
+                double cmaxx = geometry.getEnvelope().getCoordinates()[2].getX();
+                double cmaxy = geometry.getEnvelope().getCoordinates()[2].getY();
+                if (minX > cminx){
+                    minX = cminx;
+                }
+                if (minY > cminy){
+                    minY = cminy;
+                }
+                if (maxX < cmaxx){
+                    maxX = cmaxx;
+                }
+                if (maxY < cmaxy){
+                    maxY = cmaxy;
+                }
+
+                //idList.add(Integer.parseInt(feature.getID().split("\\.")[1]) - 1);
+            }
+            features.close();
+
+            //sg.printIndex();
+        }
+        dataStore.dispose();
+        avgTotal = avgTotal / count;
+
+
+        //Feasibility checking
+        // (1)The situation for AVG will change after removing infeasible areas
+        // (2) Even when avgTotal does not lie with in avgAttrMin and avgAttrMax, the algorithm will
+        if(minAttrMin > minAttrHigh|| minAttrMax < minAttrLow|| maxAttrMin > maxAttrHigh || maxAttrMax < maxAttrLow||  sumMin > sumAttrHigh || sumTotal < sumAttrLow || count < countLow){
+            System.out.println("The constraint settings are infeasible. The program will terminate immediately.");
+            System.exit(1);
+        }
+        if(varAttrLow > varAttrHigh){
+            System.out.println("The constraint settings are infeasible. The program will terminate immediately.");
+            System.exit(1);
+        }
+        if(minAttrMin > minAttrHigh){
+            System.out.println("There is no area satisfying the MIN <=. The program will terminate immediately.");
+            System.exit(1);
+        }else if(minAttrMax < minAttrLow){
+            System.out.println("There is no area satisfying the MIN >=. The program will terminate immediately.");
+            System.exit(1);
+        }
+
+        double rookstartTime = System.currentTimeMillis()/ 1000.0;
+
+        SpatialGrid sg = new SpatialGrid(minX, minY, maxX, maxY);
+
+        HashMap<Integer, Set<Integer>> neighborMap = calculateNeighbors(geometryList);
+        sg.setNeighbors(neighborMap);
+        double rookendTime = System.currentTimeMillis()/ 1000.0;
+        System.out.println("Rook time: " + (rookendTime - rookstartTime));
+
+        double dataLoadTime = System.currentTimeMillis()/ 1000.0;
+        System.out.println("Input size: " + distAttr.size());
+        long [][] distanceMatrix = EMPTabu.pdist(distAttr);
+        Date t = new Date();
+
+        String fileNameSplit[] = fileName.split("/");
+        String mapName = fileNameSplit[fileNameSplit.length-1].split("\\.")[0];
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+
+        String timeStamp = df.format(t);
+        String folderName = "data/AlgorithmTesting/FaCT_" + mapName + "_MIN-" + minAttrLow + "-" + minAttrHigh + "_AVG-" + avgAttrLow + "-" + avgAttrHigh + "_SUM-" +sumAttrLow + "-" + sumAttrHigh + "-" + timeStamp;
+        File folder = new File(folderName);
+        folder.mkdirs();
+        File settingFile = new File(folderName + "/Settings.csv");
+        if(!settingFile.exists()){
+            settingFile.createNewFile();
+        }
+        Writer settingWriter = new FileWriter(settingFile);
+        settingWriter.write("Constraint, Attribute Name, Lower Bound, Upper Bound\n");
+        settingWriter.write("Min, " + minAttrName + ", " + minAttrLow + ", " + minAttrHigh + "\n");
+        settingWriter.write("Max, " + maxAttrName + ", " + maxAttrLow + ", " + maxAttrHigh + "\n");
+        settingWriter.write("Avg, " + avgAttrName + ", " + avgAttrLow + ", " + avgAttrHigh + "\n");
+        settingWriter.write("Var, " + varAttrName + ", " + varAttrLow + ", " + varAttrHigh + "\n");
+        settingWriter.write("Sum, " + sumAttrName + ", " + sumAttrLow + ", " + sumAttrHigh + "\n");
+        settingWriter.write("Count, "  + ", " + countLow + ", " + countHigh + "\n");
+        settingWriter.write("Rand," + randFlag[0] + "," + randFlag[1] + "\n");
+        settingWriter.close();
+        File csvFile = new File(folderName + "/Result_" + mapName+"_"+ timeStamp + ".csv");
+        //System.out.println(csvFile);
+        if(!csvFile.exists()){
+            csvFile.createNewFile();
+        }
+        Writer csvWriter = new FileWriter(csvFile);
+        csvWriter.write("Iteration, Max P, Construction Time, Heuristic Time, Construction + Heuristic, Score Before Heuristic, Score After Heuristic, Score Difference，Unassigned areas\n");
+        //RegionCollection rc = construction_phase_gene(population, income, 1, sg, idList,4000,Double.POSITIVE_INFINITY);
+
+        String recordName = "data/emp_record/emp_" + mapName + "_" + minAttrName +  minAttrLow + "-" + minAttrHigh + "_" + maxAttrName +maxAttrLow + "-" + maxAttrHigh + "_"+ avgAttrName + avgAttrLow + "-" + avgAttrHigh + "_" +varAttrName + varAttrLow + "-" + varAttrHigh + "_" + sumAttrName +sumAttrLow + "-" + sumAttrHigh + "_" + countLow + "-" + countHigh;
+        varLowerbound = varAttrLow;
+        varUpprbound = varAttrHigh;
+        for(int i = 0; i < numOfIts; i++){
+            double constructionStart = System.currentTimeMillis() / 1000.0;
+            RegionCollectionWithVariance rc = construction_phase_changeOfAttribute(idList, distAttr, sg,
+                    minAttr,
+                    minAttrLow,
+                    minAttrHigh,
+
+                    maxAttr,
+                    maxAttrLow,
+                    maxAttrHigh,
+
+                    avgAttr,
+                    avgAttrLow,
+                    avgAttrHigh,
+
+                    varAttr,
+                    varAttrLow,
+                    varAttrHigh,
+
+                    sumAttr,
+                    sumAttrLow,
+                    sumAttrHigh,
+                    countLow, countHigh, repeatQuery, recordName);
+            int[] labelsCons = rc.getLabels();
+            int unassingedConstruct = 0;
+            for(int k = 0; k < labelsCons.length; k++){
+                if(labelsCons[k] < 1){
+                    unassingedConstruct += 1;
+                }
+            }
+            System.out.println("Unassigned after construction: " + unassingedConstruct);
+            System.out.println("P after construction: " + rc.getMax_p());
+            double constructionEnd = System.currentTimeMillis() / 1000.0;
+            double constructionDuration = constructionEnd - constructionStart;
+            System.out.println("Construction time: " + constructionDuration);
+            int totalReconstruct = deconItrs;
+
+
+            Random rand = new Random();
+            double reconstructionTotal = 0;
+            int upperBound = minAttr.size();
+            for(int k = 0; k < totalReconstruct; k++){
+                ArrayList<Integer> deconAreas = new ArrayList<>();
+                for(int j = 0; j < deconStrength;j++){
+                    int areaDec = rand.nextInt(upperBound);
+                    deconAreas.add(areaDec);
+                }
+                //sumAttr.set(areaDec, 0L);
+                double reConstructionStart = System.currentTimeMillis() / 1000.0;
+                rc = localReconstruction((int[])deconAreas.stream().mapToInt(j -> j).toArray(),
+                //int[] deconAreaArray = {areaDec};
+                //rc = localReconstruction(deconAreaArray,
+                        //rc.getLabels(),
+                        idList,
+                        rc,
+                        sg,
+                        distAttr,
+                        minAttr,
+                        minAttrLow,
+                        minAttrHigh,
+
+                        maxAttr,
+                        maxAttrLow,
+                        maxAttrHigh,
+
+                        avgAttr,
+                        avgAttrLow,
+                        avgAttrHigh,
+
+                        varAttr,
+                        varAttrLow,
+                        varAttrHigh,
+
+                        sumAttr,
+                        sumAttrLow,
+                        sumAttrHigh,
+                        countLow, countHigh,
+                        true,
+                        "localReconstruct", true
+                );
+                double reConstructionEnd = System.currentTimeMillis() / 1000.0;
+                double reConstructDuration   = reConstructionEnd - reConstructionStart;
+                reconstructionTotal += reConstructDuration;
+                //System.out.println("Construction time: " + constructionDuration);
+                System.out.println("Re-Construction time: " + reConstructDuration);
+            }
+
+
+            //System.out.println("Time for construction phase:\n" + (constructionTime - rookendTime));
+
+            int max_p = rc.getMax_p();
+            //System.out.println("MaxP: " + max_p);
+            //Map<Integer, Integer> regionSpatialAttr = rc.getRegionSpatialAttr();
+        /*System.out.println("regionSpatialAttr after construction_phase:");
+        for(Map.Entry<Integer, Integer> entry: regionSpatialAttr.entrySet()){
+            Integer rid = entry.getKey();
+            Integer rval = entry.getValue();
+            System.out.print(rid + ": ");
+            System.out.print(rval + " ");
+            //System.out.println();
+        }*/
+
+            long totalWDS = EMPTabu.calculateWithinRegionDistance_var(rc.getRegionMap(), distanceMatrix);
+            //System.out.println("totalWithinRegionDistance before tabu: \n" + totalWDS);
+            int tabuLength = 10;
+            int max_no_move = distAttr.size();
+            //checkLabels(rc.getLabels(), rc.getRegionList());
+
+            //System.out.println("Start tabu");
+            if(debug){
+                System.out.println(Arrays.toString(rc.getLabels()));
+                System.out.println(Arrays.toString(rc.getLabels()));
+                System.out.println(rc.getRegionMap().keySet());
+                checkLabels_var(rc.getLabels(), rc.getRegionMap());
+            }
+            //TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, varAttr, sumAttr, avgAttr);
+            //int[] labels = tr.labels;
+            //System.out.println(labels.length);
+            //long WDSDifference = totalWDS - tr.WDS;
+            //int[] labels = SimulatedAnnealing.performSimulatedAnnealing(rc.getLabels(), rc.getRegionList(), sg, pdist((distAttr)), minAttr, maxAttr, sumAttr, avgAttr);
+            double endTime = System.currentTimeMillis()/ 1000.0;
+            //System.out.println("MaxP: " + max_p);
+            double heuristicDuration = endTime - constructionEnd;
+            //System.out.println("Time for tabu(s): \n" + (endTime - constructionTime));
+            // System.out.println("total time: \n" +(endTime - startTime));
+            File f = new File(folderName +"/" + i + ".txt");
+            if(!f.exists()){
+                f.createNewFile();
+            }
+            int unassignedCount = 0;
+            int[] labels = rc.getLabels();
+            Writer w = new FileWriter(f);
+            for( int j = 0; j < labels.length; j++){
+                w.write(labels[j] + "\n");
+                if(labels[j] < 1){
+                    unassignedCount++;
+                }
+            }
+            w.close();
+            //System.out.println("minTime: " + minTime);
+            //System.out.println("avgTime: " + avgTime);
+            //System.out.println("sumTime: " + sumTime);
+
+            System.out.println("Iteration: " + i);
+            System.out.println("p: "+ max_p);
+            System.out.println("Construction time: " + constructionDuration);
+            System.out.println("Tabu search time: " + heuristicDuration);
+            System.out.println("Reconstruction total time: " + reconstructionTotal);
+            System.out.println("Heterogeneity score before Tabu: "  + totalWDS);
+            System.out.println("Heterogeneity score after Tabu: " + totalWDS);
+            System.out.println("Number of unassigned areas: " + unassignedCount + "\n");
+
+            csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + totalWDS + ", " + 0 + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
+            csvWriter.flush();
+            minTime = 0;
+            avgTime = 0;
+            sumTime = 0;
+
+        }
+        csvWriter.close();
+
+        if(debug)
+            System.out.println("End of setipnput");
+
     }
 
 }
