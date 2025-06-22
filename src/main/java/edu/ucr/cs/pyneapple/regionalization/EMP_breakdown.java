@@ -407,7 +407,6 @@ public class EMP_breakdown{
                             updated = true;
                             break;
                         }
-
                     }
                 }
                 if(var_debug){
@@ -2457,7 +2456,8 @@ public class EMP_breakdown{
                                              Double countLow,
                                              Double countHigh,
                                              String distAttrName,
-                                             boolean repeatQuery
+                                             boolean repeatQuery,
+                                             double maxP
 
     ) throws Exception {
         double startTime = System.currentTimeMillis()/ 1000.0;
@@ -2654,7 +2654,8 @@ public class EMP_breakdown{
                     sumAttr,
                     sumAttrLow,
                     sumAttrHigh,
-                    countLow, countHigh, repeatQuery, recordName);
+                    countLow, countHigh, repeatQuery, recordName,
+                    maxP);
             int[] labelsCons = rc.getLabels();
             int unassingedConstruct = 0;
             for(int k = 0; k < labelsCons.length; k++){
@@ -2666,7 +2667,7 @@ public class EMP_breakdown{
             double constructionEnd = System.currentTimeMillis() / 1000.0;
             double constructionDuration = constructionEnd - constructionStart;
             //System.out.println("Time for construction phase:\n" + (constructionTime - rookendTime));
-            System.out.println("Construction time: " + constructionDuration);
+            System.out.println("Construction time: " + constructionDuration + " ms.");
             int max_p = rc.getMax_p();
             //System.out.println("MaxP: " + max_p);
             //Map<Integer, Integer> regionSpatialAttr = rc.getRegionSpatialAttr();
@@ -2837,7 +2838,7 @@ public class EMP_breakdown{
                                                                                     Double sumUpperBound,
 
                                                                                     Double countLowerBound,
-                                                                                    Double countUpperBound, boolean repeatQuery, String recordName)
+                                                                                    Double countUpperBound, boolean repeatQuery, String recordName,double maxP)
     {
 
         int maxIt = 1;
@@ -2894,7 +2895,7 @@ public class EMP_breakdown{
                             }
                         }
                     }
-                    System.out.println(preMaxAttr.equals(maxAttr) + " lengt h" + preMaxAttr.size() + " " + maxAttr.size());
+                    System.out.println(preMaxAttr.equals(maxAttr) + " length" + preMaxAttr.size() + " " + maxAttr.size());
                     if(!preMaxAttr.equals(maxAttr)){
                         for(int i = 0; i < preMaxAttr.size(); i++){
                             if(!preMaxAttr.get(i).equals(maxAttr.get(i))){
@@ -3320,9 +3321,17 @@ public class EMP_breakdown{
             }
             //System.out.println("Distance for this regionList" + calculateWithinRegionDistance(regionList, distanceMatrix));
             if (regionList.size() > max_p || (regionList.size() == max_p && unAssignedCount < min_unAssigned)) {
-                max_p = regionList.size();
-                min_unAssigned = unAssignedCount;
-                bestCollection = new RegionCollectionWithVariance(regionList.size(), labels, regionList);
+                if (regionList.size() <= maxP) { // ✅ 加入 maxP 限制判断
+                    max_p = regionList.size();
+                    min_unAssigned = unAssignedCount;
+                    bestCollection = new RegionCollectionWithVariance(regionList.size(), labels, regionList);
+                }
+            }
+
+            // ✅ 如果达到了最大 p 值，提前停止迭代
+            if (regionList.size() >= maxP) {
+                System.out.println("Early stop: reached maxP = " + maxP);
+                break;
             }
 
             if (debug) {
@@ -3682,7 +3691,8 @@ public class EMP_breakdown{
                 "households",
                 false,
                 1,
-                100);
+                100,
+                Double.POSITIVE_INFINITY);
 
 
         System.out.println("No of areas reconstructed: " + reconstructedAreas);
@@ -3708,7 +3718,8 @@ public class EMP_breakdown{
                                              Double countLow,
                                              Double countHigh,
                                              String distAttrName,
-                                             boolean repeatQuery
+                                             boolean repeatQuery,
+                                                   double maxP
 
     ) throws Exception {
         double startTime = System.currentTimeMillis()/ 1000.0;
@@ -3905,7 +3916,7 @@ public class EMP_breakdown{
                     sumAttr,
                     sumAttrLow,
                     sumAttrHigh,
-                    countLow, countHigh, repeatQuery, recordName);
+                    countLow, countHigh, repeatQuery, recordName,maxP);
             int[] labelsCons = rc.getLabels();
             int unassingedConstruct = 0;
             for(int k = 0; k < labelsCons.length; k++){
@@ -4523,7 +4534,8 @@ public class EMP_breakdown{
                                                    String distAttrName,
                                                    boolean repeatQuery,
                                                  int deconStrength,
-                                                 int deconItrs
+                                                 int deconItrs,
+                                                 double maxP
 
     ) throws Exception {
         double startTime = System.currentTimeMillis()/ 1000.0;
@@ -4720,7 +4732,7 @@ public class EMP_breakdown{
                     sumAttr,
                     sumAttrLow,
                     sumAttrHigh,
-                    countLow, countHigh, repeatQuery, recordName);
+                    countLow, countHigh, repeatQuery, recordName,maxP);
             int[] labelsCons = rc.getLabels();
             int unassingedConstruct = 0;
             for(int k = 0; k < labelsCons.length; k++){

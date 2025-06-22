@@ -2,6 +2,10 @@ package edu.ucr.cs.pyneapple.regionalization;
 
 public class EMP_breakdown_experiments {
     public static void main(String[] args) throws Exception {
+//        runEMP_baseline_comparsion();
+        runRandomPartitionBaselineExample();
+//        runGreedyBaselineExample();
+//        runExtensiveAttributeImpactExperiment();
         //repeatTest();
         //nonRepeatTest();
         //varRangeTest15000();
@@ -14,28 +18,28 @@ public class EMP_breakdown_experiments {
         //repeatScalabilityTestGeneral("data/20K_sum/20K.shp", true);
         //repeatScalabilityTestGeneral("data/50K/50K.shp", true);
         //testEMPLarge();
-        EMP_breakdown.set_input_minmax_var("data/LACounty/La_county_noisland.shp",
-                "pop_16up",
-                -Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                "unemployed",
-                -Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                "employed",
-                -Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                "employed",
-                -Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                "pop2010",
-                20000.0,
-                Double.POSITIVE_INFINITY,
-                -Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                "households",
-                false
-
-        );
+//        EMP_breakdown.set_input_minmax_var("data/LACounty/La_county_noisland.shp",
+//                "pop_16up",
+//                -Double.POSITIVE_INFINITY,
+//                Double.POSITIVE_INFINITY,
+//                "unemployed",
+//                -Double.POSITIVE_INFINITY,
+//                Double.POSITIVE_INFINITY,
+//                "employed",
+//                -Double.POSITIVE_INFINITY,
+//                Double.POSITIVE_INFINITY,
+//                "employed",
+//                -Double.POSITIVE_INFINITY,
+//                Double.POSITIVE_INFINITY,
+//                "pop2010",
+//                20000.0,
+//                Double.POSITIVE_INFINITY,
+//                -Double.POSITIVE_INFINITY,
+//                Double.POSITIVE_INFINITY,
+//                "households",
+//                false
+//
+//        );
 
     }
     static void varRangeTest() throws Exception{
@@ -93,7 +97,8 @@ public class EMP_breakdown_experiments {
                     -Double.POSITIVE_INFINITY,
                     Double.POSITIVE_INFINITY,
                     "households",
-                    false
+                    false,
+                    Double.POSITIVE_INFINITY
 
             );
         }
@@ -125,7 +130,8 @@ public class EMP_breakdown_experiments {
                     -Double.POSITIVE_INFINITY,
                     Double.POSITIVE_INFINITY,
                     "households",
-                    false
+                    false,
+                    Double.POSITIVE_INFINITY
 
             );
         }
@@ -156,7 +162,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                false
+                false,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of AVG  no repea");
@@ -180,7 +187,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                false
+                false,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of MIN no repeat");
@@ -204,7 +212,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                false
+                false,
+                Double.POSITIVE_INFINITY
 
         );
     }
@@ -233,7 +242,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                true,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of SUM");
@@ -256,7 +266,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                true,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of AVG");
@@ -280,7 +291,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                true,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of MIN");
@@ -304,7 +316,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                true,
+                Double.POSITIVE_INFINITY
 
         );
 
@@ -335,7 +348,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                repeat
+                repeat,
+                Double.POSITIVE_INFINITY
 
         );
         EMP_breakdown.set_input_minmax_var(normalDataset,
@@ -357,7 +371,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                repeat
+                repeat,
+                Double.POSITIVE_INFINITY
 
         );
 
@@ -381,7 +396,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                repeat
+                repeat,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of AVG");
@@ -405,7 +421,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                repeat
+                repeat,
+                Double.POSITIVE_INFINITY
 
         );
         System.out.println("Change of MIN");
@@ -429,7 +446,8 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                repeat
+                repeat,
+                Double.POSITIVE_INFINITY
 
         );
 
@@ -474,10 +492,99 @@ public class EMP_breakdown_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                repeat
+                repeat,
+                Double.POSITIVE_INFINITY
 
         );
-
     }
 
+    public static void runExtensiveAttributeImpactExperiment() throws Exception {
+        String dataset = "data/LACounty/La_county_noisland.shp";
+        String[] attributes = {"pop_16up" ,"pop2010", "households", "employed" };
+        boolean repeat = false;
+
+        for (int i = 0; i < attributes.length; i++) {
+            String attr = attributes[i];
+            System.out.println("=== Testing spatially extensive attribute: " + attr);
+
+            EMP_breakdown.set_input_minmax_var(dataset,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.00,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    attr,
+                    2000.0,
+                    4000.0,
+                    "households",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households",
+                    repeat,
+                    Double.POSITIVE_INFINITY
+            );
+
+            System.out.println();
+        }
+    }
+
+    public static void runGreedyBaselineExample() throws Exception {
+        System.out.println("Running Random Baseline on LACounty dataset...");
+        GreedyBaseline.set_input_minmax_var_baseline(
+                "data/LACounty/La_county_noisland.shp",
+                "pop_16up", -Double.POSITIVE_INFINITY, 3000.00,
+                "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                "employed", 1500.00, 3000.00,
+                "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                "pop2010", 20000.0, Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                "households",
+                1
+        );
+    }
+
+    public static void runRandomPartitionBaselineExample() throws Exception {
+        System.out.println("Running Random Partition Baseline on LACounty dataset for multiple p values...");
+
+        for (int p = 100; p <= 300; p += 10) {
+            System.out.println("\n=== Running with p = " + p + " ===");
+            RandomPartitionBaseline.set_input_minmax_var_partition(
+                    "data/LACounty/La_county_noisland.shp",
+                    "pop_16up", -Double.POSITIVE_INFINITY, 3000.00,
+                    "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "employed", 1500.00, 3000.00,
+                    "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "pop2010", 20000.0, Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "households",  // distance attribute
+                    p              // target number of regions
+            );
+        }
+    }
+
+
+
+
+
+    public static void runEMP_baseline_comparsion() throws Exception {
+        String dataset = "data/LACounty/La_county_noisland.shp";
+        boolean repeat = false;
+            EMP_breakdown.set_input_minmax_var(dataset,
+                    "pop_16up", -Double.POSITIVE_INFINITY, 3000.00,
+                    "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "employed", 1500.00, 3000.00,
+                    "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "pop2010", 20000.0, Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "households",
+                    repeat,
+                    Double.POSITIVE_INFINITY
+            );
+    }
 }
