@@ -23,7 +23,8 @@ public class EMP_var_experiments {
                 -Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
                 "households",
-                true
+                true,
+                Double.POSITIVE_INFINITY
 
         );
     }

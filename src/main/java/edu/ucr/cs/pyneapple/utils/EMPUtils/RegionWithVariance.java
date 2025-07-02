@@ -116,7 +116,7 @@ public class RegionWithVariance implements Serializable {
     }
     public boolean removeArea(Integer id, ArrayList<Long> minAttr, ArrayList<Long> maxAttr, ArrayList<Long> avgAttr,  ArrayList<Long> varAttr, ArrayList<Long> sumAttr, SpatialGrid sg){
         if (!areaList.contains(id)){
-            System.out.println("Area to be removed is not in the region: area Id " + id + " region Id " + this.getId());
+//            System.out.println("Area to be removed is not in the region: area Id " + id + " region Id " + this.getId());
             return false;
         }else{
             areaList.remove(id);

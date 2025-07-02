@@ -3,8 +3,14 @@ package edu.ucr.cs.pyneapple.regionalization;
 public class EMP_breakdown_experiments {
     public static void main(String[] args) throws Exception {
 //        runEMP_baseline_comparsion();
+<<<<<<< Updated upstream
         runRandomPartitionBaselineExample();
 //        runGreedyBaselineExample();
+=======
+//        runRandomPartitionBaselineExample();
+        runGreedyBaselineExample();
+//        runRandomPartitionBaselineExample_avg();
+>>>>>>> Stashed changes
 //        runExtensiveAttributeImpactExperiment();
         //repeatTest();
         //nonRepeatTest();
@@ -535,6 +541,7 @@ public class EMP_breakdown_experiments {
     }
 
     public static void runGreedyBaselineExample() throws Exception {
+<<<<<<< Updated upstream
         System.out.println("Running Random Baseline on LACounty dataset...");
         GreedyBaseline.set_input_minmax_var_baseline(
                 "data/LACounty/La_county_noisland.shp",
@@ -553,11 +560,54 @@ public class EMP_breakdown_experiments {
         System.out.println("Running Random Partition Baseline on LACounty dataset for multiple p values...");
 
         for (int p = 100; p <= 300; p += 10) {
+=======
+        System.out.println("Running Greedy Baseline...");
+        GreedyBaseline.set_input_minmax_var_baseline(
+                "data/LACounty/La_county_noisland.shp",
+                "pop_16up", -Double.POSITIVE_INFINITY, 3000.0,
+                "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                "employed", 500.0, 2500.00,
+                "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                "pop2010",20000.0, Double.POSITIVE_INFINITY,
+                -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                "households",
+                    Double.POSITIVE_INFINITY
+            );
+    }
+
+    public static void runRandomPartitionBaselineExample() throws Exception {
+        System.out.println("Running Random Partition Baseline for multiple p values...");
+        for (int p = 10; p <= 600; p += 10) {
+>>>>>>> Stashed changes
             System.out.println("\n=== Running with p = " + p + " ===");
             RandomPartitionBaseline.set_input_minmax_var_partition(
                     "data/LACounty/La_county_noisland.shp",
                     "pop_16up", -Double.POSITIVE_INFINITY, 3000.00,
                     "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+<<<<<<< Updated upstream
+=======
+                    "employed", 1500.00, 3500.00,
+                    "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "pop2010", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "households",  // distance attribute
+                    p              // target number of regions
+            );
+        }
+    }
+
+
+    public static void runRandomPartitionBaselineExample_avg() throws Exception {
+        System.out.println("Running Random Partition Baseline on LACounty dataset for 5 iterations with p = 120...");
+
+        int p = 120;
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("\n=== Run " + i + " with p = " + p + " ===");
+            RandomPartitionBaseline.set_input_minmax_var_partition(
+                    "data/LACounty/La_county_noisland.shp",
+                    "pop_16up", -Double.POSITIVE_INFINITY, 3000.00,
+                    "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+>>>>>>> Stashed changes
                     "employed", 1500.00, 3000.00,
                     "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
                     "pop2010", 20000.0, Double.POSITIVE_INFINITY,
@@ -569,16 +619,25 @@ public class EMP_breakdown_experiments {
     }
 
 
+<<<<<<< Updated upstream
 
 
 
+=======
+>>>>>>> Stashed changes
     public static void runEMP_baseline_comparsion() throws Exception {
         String dataset = "data/LACounty/La_county_noisland.shp";
         boolean repeat = false;
             EMP_breakdown.set_input_minmax_var(dataset,
+<<<<<<< Updated upstream
                     "pop_16up", -Double.POSITIVE_INFINITY, 3000.00,
                     "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
                     "employed", 1500.00, 3000.00,
+=======
+                    "pop_16up", -Double.POSITIVE_INFINITY, 3000.0,
+                    "unemployed", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    "employed", 500.0, 2500.00,
+>>>>>>> Stashed changes
                     "households", -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
                     "pop2010", 20000.0, Double.POSITIVE_INFINITY,
                     -Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,

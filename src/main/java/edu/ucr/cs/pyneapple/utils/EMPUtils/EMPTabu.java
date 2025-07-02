@@ -348,7 +348,10 @@ public class EMPTabu {
                 if(debug){
                     System.out.println("potentialAreas: " + potentialAreas);
                 }
-                for(Integer poa: potentialAreas){
+                List<Integer> shuffledPOAs = new ArrayList<>(potentialAreas);
+                Collections.shuffle(shuffledPOAs, new Random()); // 可传入带seed的Random保持可复现
+
+                for(Integer poa: shuffledPOAs){
                     int donorRegion = labels[poa];
                     Set<Integer> poaNeighbor = r.getNeighbors(poa);
                     int lostDistance = 0;
@@ -438,7 +441,7 @@ public class EMPTabu {
                         System.out.println("Satisfiable:" + errorRegion.satisfiable());
                     }
                     if(!regionList.get(potentialMove.donorRegion).removeArea(potentialMove.area, minAttr, maxAttr, avgAttr, varAttr, sumAttr, r)){
-                        System.out.println("The area " + potentialMove.area + " is not in " + labels[potentialMove.area]);
+//                        System.out.println("The area " + potentialMove.area + " is not in " + labels[potentialMove.area]);
                     }
                     regionList.get(potentialMove.recipientRegion).addArea(potentialMove.area, minAttr.get(potentialMove.area), maxAttr.get(potentialMove.area), avgAttr.get(potentialMove.area), varAttr.get(potentialMove.area), sumAttr.get(potentialMove.area), r);
                     labels[potentialMove.area] = potentialMove.recipientRegion;
@@ -744,7 +747,7 @@ public class EMPTabu {
     }
     public static long calculateWithinRegionDistance_var(Map<Integer, RegionWithVariance> regionMap, long[][] dissimMatrix){
         long totalWithinRegionDistance = 0;
-        System.out.println(regionMap.size());
+//        System.out.println(regionMap.size());
         for(Map.Entry<Integer, RegionWithVariance> entry: regionMap.entrySet()){
             long regionDistance = 0;
             //System.out.println( entry.getValue().getAreaList().size());

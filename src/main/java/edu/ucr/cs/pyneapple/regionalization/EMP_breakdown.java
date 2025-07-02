@@ -2682,10 +2682,62 @@ public class EMP_breakdown{
 
             long totalWDS = EMPTabu.calculateWithinRegionDistance_var(rc.getRegionMap(), distanceMatrix);
             //System.out.println("totalWithinRegionDistance before tabu: \n" + totalWDS);
-            int tabuLength = 10;
+            int tabuLengthDefault = 10;
+            int[] tabuLengthList = {1,2,3,4,5,6,7,8,9,10};
             //int max_no_move = distAttr.size();
-            int max_no_move =1000;
+            int max_no_move = 5000;
             //checkLabels(rc.getLabels(), rc.getRegionList());
+//            for (int tabuLength : tabuLengthList) {
+//                long start = System.currentTimeMillis();
+//                long WDS;
+//                long WDSDifference;
+//                int[] labels;
+//
+//                System.out.println("==== Tabu Tenure = " + tabuLength + " ====");
+//
+//                TabuReturn tr = EMPTabu.performTabu_var(
+//                        rc.getLabels(),
+//                        rc.getRegionMap(),
+//                        sg,
+//                        distanceMatrix,
+//                        tabuLength,
+//                        max_no_move,
+//                        minAttr, maxAttr, avgAttr, varAttr, sumAttr
+//                );
+//
+//                labels = tr.labels;
+//                WDSDifference = totalWDS - tr.WDS;
+//                WDS = tr.WDS;
+//
+//                // 写入标签结果
+//                File f = new File(folderName + "/" + i + "_tabu_" + tabuLength + ".txt");
+//                if (!f.exists()) {
+//                    f.createNewFile();
+//                }
+//
+//                int unassignedCount = 0;
+//                Writer w = new FileWriter(f);
+//                for (int j = 0; j < labels.length; j++) {
+//                    w.write(labels[j] + "\n");
+//                    if (labels[j] < 1) {
+//                        unassignedCount++;
+//                    }
+//                }
+//                w.close();
+//                long end = System.currentTimeMillis();
+//
+//                double tabuTime = (end - start) / 1000.0; // 秒
+//                System.out.println("Tabu Search Time: " + tabuTime + " seconds");
+//
+//                // 输出日志
+//                System.out.println("Iteration: " + i);
+//                System.out.println("Tabu Tenure: " + tabuLength);
+//                System.out.println("Heterogeneity score before Tabu: " + totalWDS);
+//                System.out.println("Heterogeneity score after Tabu: " + WDS);
+//                System.out.println("WDS improvement: " + WDSDifference);
+//                System.out.println("Unassigned areas: " + unassignedCount);
+//            }
+
 
             //System.out.println("Start tabu");
             if(debug){
@@ -2693,7 +2745,7 @@ public class EMP_breakdown{
                 System.out.println(rc.getRegionMap().keySet());
                 checkLabels_var(rc.getLabels(), rc.getRegionMap());
             }
-            System.out.println("Var 2343 " + varAttr.get(2343));
+//            System.out.println("Var 2343 " + varAttr.get(2343));
 
             //System.out.println(labels.length);
             //long WDSDifference = totalWDS - tr.WDS;
@@ -2705,7 +2757,7 @@ public class EMP_breakdown{
                 WDSDifference = 0;
                 WDS = totalWDS;
             }else{
-                TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, avgAttr, varAttr, sumAttr);
+                TabuReturn tr = EMPTabu.performTabu_var(rc.getLabels(), rc.getRegionMap(), sg, EMPTabu.pdist((distAttr)), tabuLengthDefault, max_no_move, minAttr, maxAttr, avgAttr, varAttr, sumAttr);
                 labels = tr.labels;
                 WDSDifference = totalWDS - tr.WDS;
                 WDS = tr.WDS;
